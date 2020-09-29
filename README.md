@@ -1,1 +1,2 @@
-# tweetCoin-0.0
+# tweetCoin
+tweetCoin User Manuals 

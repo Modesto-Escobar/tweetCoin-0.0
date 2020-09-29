@@ -1,0 +1,18 @@
+Package: tweetCoin
+Type: Package
+Version: 0.0.1
+Date: 2020-09-28
+Title: netCoin for Twitter
+Description: Create interactive analytic networks from Twitter messages.
+License: GPL-2 | GPL-3
+Depends: R (>= 3.5.0)
+Imports: igraph (>= 1.0.1), gmp (>= 0.6), haven (>= 1.1.0), netCoin (>= 1.2.15), rtweet (>= 0.7.0), WikidataQueryServiceR (>= 1.0.0), WikidataR (>= 1.4.0)
+Suggests: knitr, rmarkdown, lavaan, shiny
+VignetteBuilder: knitr
+NeedsCompilation: no
+Author: Modesto Escobar <modesto@usal.es>,
+  Jose L.A. Berrocal <berrocal@usal.es>,
+  David Barrios <metal@usal.es>,
+  Carlos Prieto <cprietos@usal.es>,
+  Cristina Calvo <cristinacalvolopez@usal.es>.
+Maintainer: Modesto Escobar <modesto@usal.es>

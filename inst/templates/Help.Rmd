@@ -1,0 +1,36 @@
+Help
+----
+Each **nodes** or circles are responses or categories of variables. Their sizes are proportional to their frequency in the sample. The **links** are associations between responses. Their width is proportional to the degree of association between them measured with normalized Haberman residuals.
+
+The **spatial arrangement** of the circles is based on a physical attraction-repulsion mechanism called Fruchterman-Reingold in honor of those who proposed it.
+
+This **graphic** is interactive, so many of its features can be changed. A partial list of what can be done is presented at the bottom of this page.
+
+The three most useful operations that can be performed on nodes are selection, filter, and isolation. By **selecting**, the nodes are marked with a yellow circle and the information about them appears in the table below. Once selected, they can be highlighted in two ways: a) isolating them from the rest (**isolate**), or b) filtering them together with their neighbors (**filter**).
+
+Keyboard
+--------
+
+Key                | Action
+---                | ------
+Click a node       | Select
+                   |
+Ctrl+d             | Change from a static to a dynamic arrangement of elements.
+Ctrl+s             | Select all (or none) of the nodes.
+Ctrl+f             | Filter all selected elements.
+Ctrl+b             | Add neighbors to the selected.
+Ctrl+e             | Filter selected nodes and neighbors.
+                   |
+Ctrl+r             | Show all elements of the analysis.
+Ctrl+i             | Show only items associated with others.
+                   |
+Ctrl+l             | Activate or deactivate the legend.
+                   | 
+Ctrl++             | Zoom in (also with mouse's wheel).
+Ctrl+0             | Zoom reset.
+Ctrl+-             | Zoom out (also with mouse's wheel).
+Ctrl+c             | Center the graph.
+Ctrl+->            | Move the graph to the right.
+Ctrl+<-            | Move the graph to the left.
+                   | 
+Ctrl+h             | Help.

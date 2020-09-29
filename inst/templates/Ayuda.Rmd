@@ -1,0 +1,36 @@
+Ayuda
+----
+Los **nodos** o círculos son respuestas o categorías de variables. Sus tamaños son proporcionales a su frecuencia en la muestra. Los **vínculos** o líneas de enlace son asociaciones entre las repuestas. Su anchuar es proporcional al grado de asociación entre ellas medido con los residuos normalizados de Haberman.
+
+La **disposición espacial** de los círculos está basada en un mecanismo físico de atracción-repulsión denominado Fruchterman-Reingold en honor a quienes lo propusieron.
+
+Este **gráfico** es interactivo de modo que muchas de sus características pueden cambiarse. Una lista parcial de lo que puede hacerse se presenta al final de esta página.
+
+Las tres operaciones más útiles que pueden realizarse con los nodos son la selección, el filtro y el aislamiento. Al **seleccionar**, se marcan con un círculo amarillo y aparece información de ellos en la tabla de abajo. Una vez seleccionados se pueden destacar de dos modos: a) aislándolos del resto (**aislar**), o b) filtrándolos junto con sus vecinos (**filtrar**).
+
+Teclado
+--------
+
+Tecla              | Acción
+-----              | ------
+Clic en un círculo | Selección de una categoría.
+                   |
+Ctrl+d             | Paso de una disposición estática a otra dinámica de elementos.
+Ctrl+s             | Selección de todas o ningún elemento.
+Ctrl+f             | Filtro de los elementos seleccionados.
+Ctrl+b             | Selección de elementos vecinos a los ya seleccionados.
+Ctrl+e             | Filtro de los elementos seleccionados y sus vecinos.
+                   |
+Ctrl+r             | Mostrar todos los elementos del análisis. 
+Ctrl+i             | Mostrar solo elementos asociados con otros.
+                   |
+Ctrl+l             | Activar o desactivar la leyenda.
+                   | 
+Ctrl++             | Acercar zoom.
+Ctrl+0             | Restaurar zoom.
+Ctrl+-             | Alejar zoom.
+Ctrl+c             | Centrar el gráfico.
+Ctrl+->            | Mover el gráfico a la derecha.
+Ctrl+<-            | Mover el gráfico a la izquierda.
+                   | 
+Ctrl+h             | Ayuda.

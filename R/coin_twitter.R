@@ -1,0 +1,158 @@
+credentials <- function(file = "credentials.txt") {
+    credenciales <- read.csv(file, encoding="UTF-8", sep=";", quote="'", header=TRUE, stringsAsFactors=FALSE)
+    appname <-credenciales$appname
+    consumerkey <- credenciales$consumer_key
+    consumersecret <- credenciales$consumer_secret
+    accesstoken <- credenciales$access_key
+    accesstokensecret <- credenciales$access_secret
+    TT <- create_token(app = appname, consumer_key = consumerkey, consumer_secret = consumersecret, 
+                       access_token = accesstoken, access_secret = accesstokensecret, set_renv = FALSE)
+    assign("token", TT, envir = .GlobalEnv)
+  }
+
+load_tweets <- function(name, type = "user"){
+  if (type == "user")
+  {
+    output_file_name <- paste0("user_tweets_", name, ".csv")
+  }
+  else if (type == "search")
+  {
+    output_file_name <- paste0("search_tweets_", name, ".csv")
+  }
+  else if (type == "stream")
+  {
+    output_file_name <- paste0("stream_tweets_", name, ".csv")
+  }
+  data_tweets<-read_twitter_csv(file = output_file_name, unflatten = FALSE)
+  return(data_tweets)
+}
+
+user_tweet <- function(user, maxtweets = 100, home = FALSE, parse = TRUE, check = TRUE, token = NULL, include_rts = FALSE, output_file_name = NULL){
+  if(is.null(output_file_name)){
+    output_file_name <- paste0("user_tweets_", user, ".csv")
+  }
+  
+  if(!(output_file_name %in% list.files())){
+    datos_new <- get_timeline(user = user, n = maxtweets, home = home, parse = parse, check = check, token = token, include_rts = include_rts)
+    write_as_csv(x = datos_new, file_name = output_file_name)
+    print(paste("Numero de tweets nuevos:", nrow(datos_new)))
+    print("Nuevo fichero creado")
+  }else{
+    datos_old<-read_twitter_csv(file = output_file_name, unflatten = TRUE)
+    ultimo_id <- datos_old[nrow(), "status_id"]
+    ultimo_id = toString(as.bigz(ultimo_id) + 1)
+    datos_new <- get_timeline(user = user, n = maxtweets, max_id = ultimo_id,
+                              home = home, parse = parse, check = check, token = token, include_rts = include_rts)
+    write_as_csv(x = datos_new, file_name = "./tmp.csv")
+    datos_new<-read_twitter_csv(file = "./tmp.csv", unflatten = TRUE)
+    datos_concatenados <- cbind(datos_old, datos_new)
+    write_as_csv(x = datos_concatenados, file_name = output_file_name)
+    print(paste("Numero total de tweets:", nrow(datos_concatenados)))
+    print(paste("Numero de tweets nuevos:", nrow(datos_new)))
+  }
+}
+
+search_tweet <- function(search, maxtweets = 300, type = "recent", include_rts = TRUE, geocode = NULL, max_id = NULL, parse = TRUE, token = NULL, retryonratelimit = FALSE, verbose = TRUE, output_file_name = NULL){
+  if(is.null(output_file_name)){
+    output_file_name <- paste0("search_tweets_", search, ".csv")
+    
+  }
+  
+  if(!(output_file_name %in% list.files())){
+    datos_new <- search_tweets(search, n = maxtweets, type = type, include_rts = include_rts, geocode = geocode, max_id = max_id, parse = parse, token = token, retryonratelimit = retryonratelimit, verbose = verbose)
+    write_as_csv(x = datos_new, file_name = output_file_name)
+    
+    print(paste("Numero de tweets nuevos:", nrow(datos_new)))
+    print("Nuevo fichero creado")
+  }else{
+    
+    datos_old<-read_twitter_csv(file = output_file_name, unflatten = TRUE)
+    
+    ultimo_id <- datos_old[nrow(datos_old),"status_id"]
+    
+    ultimo_id = toString(as.bigz(ultimo_id) + 1)
+   
+    datos_new <- search_tweets(search, n = maxtweets, type = type, include_rts = include_rts, geocode = geocode, max_id = ultimo_id, parse = parse, token = token, retryonratelimit = retryonratelimit, verbose = verbose)
+    write_as_csv(x = datos_new, file_name = "./tmp.csv")
+    datos_new<-read_twitter_csv(file = "./tmp.csv", unflatten = TRUE)
+    datos_concatenados <- cbind(datos_old, datos_new)
+    write_as_csv(x = datos_concatenados, file_name = output_file_name)
+    print(paste("Numero total de tweets:", nrow(datos_concatenados)))
+    print(paste("Numero de tweets nuevos:", nrow(datos_new)))
+  }
+
+}
+
+stream_tweet <- function(search, timeout = 120, parse = TRUE, token = NULL, output_file_name = search, verbose = TRUE, dir = NULL){
+    datos <- stream_tweets(search, timeout = timeout, parse = parse, token = token, file_name = output_file_name, verbose = verbose)
+    
+    output_file_name_json <- paste0(output_file_name, ".json")
+    datos_new <- parse_stream(output_file_name_json)
+    output_file_name_csv <- paste0("stream_tweets_", output_file_name, ".csv")
+    write_as_csv(x = datos_new, file_name = output_file_name_csv)
+    
+    print(paste("Numero de tweets:", nrow(datos_new)))
+    
+    
+    if (file.exists(output_file_name_json))
+    {
+      file.remove(output_file_name_json)
+    }
+  
+  
+}
+
+follow_tweet <- function(user, page = "-1", retryonratelimit = TRUE, parse = TRUE, verbose = TRUE, token = NULL){
+  look <- lookup_users(user)
+  datos_perfil <- users_data(look)
+  num_seguidores <- datos_perfil$followers_count
+  print(paste("Numero de seguidores:", num_seguidores))
+  print ("Indica el numero de seguidores que quieres recuperar. Si se superan 75000 tendra periodos de espera de 15 minutos. Sera un proceso lento.")
+  n <- scan()
+  parte_entera <- floor(n/75000)
+  parte_decimal <- (n/75000) - floor(n/75000)
+  if ((parte_entera == 0) | ((parte_entera == 1) & (parte_decimal == 0)))
+  {
+    partes <- 1
+  }
+  else
+  {
+    partes <- parte_entera
+    
+    resto <- n - (partes * 75000)
+    if (parte_decimal > 0)
+    {
+      partes <- partes + 1
+    }
+  }
+  if (partes == 1)
+  {
+    
+    seguidores_id <- get_followers(user, n, page = page, retryonratelimit = retryonratelimit, parse = parse, verbose = verbose, token = token)
+    
+  }
+  else
+  {
+    for (i in 1:partes)
+    {
+      if (i == 1)
+      {
+        seguidores_id <- get_followers(user, n = 75000, page = page, retryonratelimit = retryonratelimit, parse = parse, verbose = verbose, token = token)
+        next_page <- next_cursor(seguidores_id)
+      }
+      else if (i > 1 & i < partes)
+      {
+        seguidores_id2 <- get_followers(user, n = 75000, page = next_page, retryonratelimit = retryonratelimit, parse = parse, verbose = verbose, token = token)
+        next_page <- next_cursor(seguidores_id2)
+        seguidores_id <- rbind(seguidores_id, seguidores_id2)
+      }
+      else if (i == partes)
+      {
+        seguidores_id2 <- get_followers(user, n = resto, page = next_page, retryonratelimit = retryonratelimit, parse = parse, verbose = verbose, token = token)
+        seguidores_id <- rbind(seguidores_id, seguidores_id2)
+      }
+    }
+  }
+  seguidores <- lookup_users(as_factor(seguidores_id$user_id))
+  seguidores_final <- users_data(seguidores)
+}

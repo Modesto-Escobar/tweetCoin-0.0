@@ -1,0 +1,2 @@
+appname;consumer_key;consumer_secret;access_key;access_secret
+'jjj';'jjj';'jjj';'jjj';'jjj'
