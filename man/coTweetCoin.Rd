@@ -1,11 +1,11 @@
-\name{tTweetCoin}
-\alias{tTweetCoin}
+\name{coTweetCoin}
+\alias{coTweetCoin}
 \title{netCoin graph of original tweets}
 \description{
 This function produces a network object from a data frame or matrix of tweets (original messages) coincidendes, conecting mentions and hashtags.
 }
 \usage{
-tTweetCoin(data, text, searchers = "@#", 
+coTweetCoin(data, text, searchers = "@#", 
           original = TRUE, excludeRT = TRUE, 
           min = 1, others = NULL, 
           oldText = NULL, newText = NULL, ...)
@@ -38,17 +38,17 @@ Modesto Escobar, Department of Sociology and Communication, University of Salama
 ## This example uses a sample of original tweets using 
 ## the hashtag #cuentalo:
 data(cuenta)
-G<-tTweetCoin(cuenta,"text" )
+G<-coTweetCoin(cuenta,"text" )
 nodes <- G$nodes
 
-# plot(tTweetCoin(data = cuenta, text = "text", 
+# plot(coTweetCoin(data = cuenta, text = "text", 
 #                 nodes = nodes), dir = "~/temp")
 
 ## You can include all type of arguments from netCoin 
 ## and/or allNet:
 nodes$tipo<- ifelse(grepl("^@", G$nodes$name), 
                       "mention", "hashtag")
-# plot(tTweetCoin(data = cuenta, text = "text",
+# plot(coTweetCoin(data = cuenta, text = "text",
 #                 nodes = nodes, color ="tipo", 
 #                 size = "degree", shape = "tipo", 
 #                 zoom = 1.68, repulsion = 32, 

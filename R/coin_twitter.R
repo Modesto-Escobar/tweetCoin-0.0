@@ -39,13 +39,13 @@ user_tweet <- function(user, maxtweets = 100, home = FALSE, parse = TRUE, check 
     print("Nuevo fichero creado")
   }else{
     datos_old<-read_twitter_csv(file = output_file_name, unflatten = TRUE)
-    ultimo_id <- datos_old[nrow(), "status_id"]
+    ultimo_id <- datos_old[nrow(datos_old), ]$status_id
     ultimo_id = toString(as.bigz(ultimo_id) + 1)
     datos_new <- get_timeline(user = user, n = maxtweets, max_id = ultimo_id,
                               home = home, parse = parse, check = check, token = token, include_rts = include_rts)
     write_as_csv(x = datos_new, file_name = "./tmp.csv")
     datos_new<-read_twitter_csv(file = "./tmp.csv", unflatten = TRUE)
-    datos_concatenados <- cbind(datos_old, datos_new)
+    datos_concatenados <- rbind(datos_old, datos_new)
     write_as_csv(x = datos_concatenados, file_name = output_file_name)
     print(paste("Numero total de tweets:", nrow(datos_concatenados)))
     print(paste("Numero de tweets nuevos:", nrow(datos_new)))
@@ -68,14 +68,14 @@ search_tweet <- function(search, maxtweets = 300, type = "recent", include_rts =
     
     datos_old<-read_twitter_csv(file = output_file_name, unflatten = TRUE)
     
-    ultimo_id <- datos_old[nrow(datos_old),"status_id"]
+    ultimo_id <- datos_old[nrow(datos_old),]$status_id
     
     ultimo_id = toString(as.bigz(ultimo_id) + 1)
    
     datos_new <- search_tweets(search, n = maxtweets, type = type, include_rts = include_rts, geocode = geocode, max_id = ultimo_id, parse = parse, token = token, retryonratelimit = retryonratelimit, verbose = verbose)
     write_as_csv(x = datos_new, file_name = "./tmp.csv")
     datos_new<-read_twitter_csv(file = "./tmp.csv", unflatten = TRUE)
-    datos_concatenados <- cbind(datos_old, datos_new)
+    datos_concatenados <- rbind(datos_old, datos_new)
     write_as_csv(x = datos_concatenados, file_name = output_file_name)
     print(paste("Numero total de tweets:", nrow(datos_concatenados)))
     print(paste("Numero de tweets nuevos:", nrow(datos_new)))
@@ -156,3 +156,21 @@ follow_tweet <- function(user, page = "-1", retryonratelimit = TRUE, parse = TRU
   seguidores <- lookup_users(as_factor(seguidores_id$user_id))
   seguidores_final <- users_data(seguidores)
 }
+
+prepare <- function(data=data, info=c("fields", "cotweets", "inform"), original= TRUE, quote=FALSE, retweet=FALSE) {
+  if ("fields" %in% info) fields <- c("screen_name","text","created_at","is_quote", "is_retweet") else fields <- NULL
+  if ("cotweets" %in% info) cotweets <- c("quoted_screen_name", "retweet_screen_name") else cotweets <- NULL
+  if ("inform" %in% info) inform <- c("followers_count", "friends_count", "statuses_count") else inform <- NULL
+  Inform <- c("followers", "following", "stauses")
+  data$intro <- ifelse(data$is_quote==FALSE & data$is_retweet==FALSE & original==TRUE, TRUE, FALSE)
+  data$intro <- ifelse((data$is_quote==quote & quote==TRUE) | (data$is_retweet==retweet & retweet==TRUE), TRUE, data$intro)
+  newdata <- data[data$intro, c(fields, cotweets, inform)]
+  newdata$date  <- as.POSIXct(newdata$created_at)
+  newdata$text  <- ifelse(newdata$is_retweet, paste0("RT @", newdata$retweet_screen_name, ": ", newdata$text), newdata$text)
+  newdata$text  <- ifelse(newdata$is_quote  , paste0("RT @", newdata$quoted_screen_name, ": ", newdata$text), newdata$text)
+  names(newdata) <- sub("^screen_name","author", names(newdata))
+  newdata <- newdata[,c("author","text","date",inform)]
+  names(newdata)[4:dim(newdata)[2]] <- Inform
+  return(newdata)
+}
+
