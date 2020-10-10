@@ -1,8 +1,6 @@
 \name{d_retweet}
 \alias{d_retweet}
-\title{
-Dynamic netCoin graph of tweets
-}
+\title{Dynamic netCoin graph of retweets.}
 \description{
 This function produces a dynamic and interactive netCoin network that allows to recreate the timeline of messages and interactions on Twitter.
 }
@@ -46,7 +44,7 @@ Modesto Escobar, Department of Sociology and Communication, University of Salama
 ## Example using a sample of tweets and retweets with 
 ## the hashtag #cuentalo:
 data(cuentalo)
-# d_retweet(Tuits = cuentalo)
+#d_retweet(Tuits = cuentalo)
 
 ## You can use all kind of netCoin arguments:
 # d_retweet( Tuits = cuentalo, zoom = 2.5, repulsion= 15)

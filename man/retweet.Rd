@@ -1,11 +1,11 @@
-\name{reTweetCoin}
-\alias{reTweetCoin}
+\name{retweet}
+\alias{retweet}
 \title{netCoin graph of Retweets}
 \description{
 This function produces a network object from a data frame or matrix of retweets (RTs or shared messages) conecting profiles and retweets.
 }
 \usage{
-reTweetCoin(data, sender = "author", 
+retweet(data, sender = "author", 
             text = "text", 
             language = "en", nodes=NULL, ...)
 }
@@ -29,14 +29,16 @@ Modesto Escobar, Department of Sociology and Communication, University of Salama
 \examples{
 ## This example uses a sample of retweets using 
 ## the hashtag #cuentalo:
+
 data(recuenta)
-reTweetCoin( recuenta, "author", "text")
-# plot(reTweetCoin( recuenta, "author", "text"),
+retweet( recuenta, "author", "text")
+# plot(retweet( recuenta, "author", "text"),
 #                   dir = "~/temp")
 
 ## You can add all kinds of netCoin and/or 
 ## allNet arguments:
-# plot(reTweetCoin( recuenta, "author", "text", 
+
+# plot(retweet( recuenta, "author", "text", 
 #                   zoom = .5, repulsion = 8.5, 
 #                   size = "degree", showArrows = TRUE), 
 #                   dir = "~/temp")

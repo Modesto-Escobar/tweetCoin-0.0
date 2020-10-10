@@ -1,13 +1,13 @@
-\name{mentionCoin}
-\alias{mentionCoin}
+\name{mention}
+\alias{mention}
 \title{
-netCoin graph of original authors and mentions
+Static netCoin graph of original authors and mentions
 }
 \description{
-This function produces a network object from a data frame or matrix of tweets (original messages) conecting authors and mentions (@).
+This function produces a static network object from a data frame or matrix of tweets (original messages) conecting authors and mentions (@).
 }
 \usage{
-mentionCoin(data, author = "author", text = "text", ...)
+mention(data, author = "author", text = "text", ...)
 }
 \arguments{
   \item{data}{A matrix or data.frame of tweets and users.}
@@ -31,12 +31,12 @@ Modesto Escobar, Department of Sociology and Communication, University of Salama
 ## the hashtag #cuentalo:
 
 data(cuenta)
-mentionCoin(cuenta, "author", "text")
+mention(cuenta, "author", "text")
 
 ## You can include all type of arguments from netCoin 
 ## and/or allNet And visualize the correspondent graph:
 
-G <- mentionCoin(data = cuenta, author = "author", 
+G <- mention(data = cuenta, author = "author", 
                   text = "text")
 
 # plot(netCoin(G, size = "degree", distance = 16.4, 

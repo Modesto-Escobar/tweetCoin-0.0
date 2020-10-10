@@ -211,7 +211,7 @@ hashtag_extract<- function(texto,characters="#@", excludeRT=TRUE, oldText=NULL, 
 }
 
 
-mentionCoin <- function(data, author="author", text="text", ...) {
+mention <- function(data, author="author", text="text", ...) {
   arguments <- list(...)
   q <- sapply(hashtag_extract(data[[text]],"@"),strsplit,"\\|")
   n.obs <- sapply(q, length)
@@ -233,7 +233,7 @@ mentionCoin <- function(data, author="author", text="text", ...) {
 }
 
 
-coTweetCoin <- function(data, text="text", searchers="@#", original= TRUE, excludeRT=TRUE, min=1, others=NULL, oldText=NULL, newText=NULL, ...) {
+cotweet <- function(data, text="text", searchers="@#", original= TRUE, excludeRT=TRUE, min=1, others=NULL, oldText=NULL, newText=NULL, ...) {
   arguments <- list(...)
   X <- data[[text]]
   if (!original) X <- X[grepl("^RT @.*:", X)]
@@ -246,7 +246,7 @@ coTweetCoin <- function(data, text="text", searchers="@#", original= TRUE, exclu
 }
 
 
-reTweetCoin <- function(data, sender="author", text="text", language="en", nodes=NULL, ...){
+retweet <- function(data, sender="author", text="text", language="en", nodes=NULL, ...){
   X <- data[grepl("^RT ",data[[text]]), c(sender, text)]
   if(inherits(X[[sender]], "haven_labelled")) X[[sender]] <- as_factor(X[[sender]])
   if(!inherits(X[[sender]], "character")) X[[sender]] <- as.character(paste(X[[sender]]))
@@ -305,6 +305,324 @@ type <- function(Profiles, followers="followers", following="following",
                                       ifelse(Profiles[[X]] < 0 & Profiles[[Y]] <= 0, "common user",
                                              ifelse(Profiles[[X]] < 0 & Profiles[[Y]] > 0, "hidden influential", "Not class."))))
   return(Profiles)
+}
+
+d_mention <-function(Tuits, author="author", text="text", date="date",
+                     fields=c("followers", "following", "stauses", "location"),
+                     beginDate = NULL, endDate= NULL, interval= 3600, tzone = "Europe/Paris",
+                     nFrames = Inf, seed=1, n = min(5000,nrow(Tuits)/2), minlabel=5, ...) {
+  
+  arguments <- list(...)
+  
+  if(!exists("label",      arguments)) arguments$label <- "name"
+  if(!exists("size",       arguments)) arguments$size <- "Retweeted"
+  if(!exists("labelSize",  arguments)) arguments$labelSize <- "size"
+  if(!exists("color",      arguments)) arguments$color <- "Walktrap"
+  if(!exists("repulsion",  arguments)) arguments$repulsion <- 3
+  if(!exists("distance",   arguments)) arguments$distance <- 3
+  if(!exists("zoom",       arguments)) arguments$zoom <-1
+  if(!exists("main",       arguments)) arguments$main <- "Title"
+  if(!exists("note",       arguments)) arguments$note <- "Elaborated with netCoin"
+  if(!exists("showArrows", arguments)) arguments$showArrows <- TRUE
+  if( exists("dir",        arguments)) {
+    directory <- arguments$dir 
+    arguments$dir <- NULL
+  }
+  if("location" %in% fields) Tuits$location <- substr(Tuits$location,1,50)
+  
+  title <- arguments$main
+  
+  # T1 <- Sys.time() #A ----
+  
+  Tuits$target<-ifelse(grepl("^RT @",Tuits[[text]]),sub(".*(@.*?):[ ].*","\\1",Tuits[[text]]),"")
+  Tuits$author <- tolower(iconv(Tuits[[author]],to="ASCII//TRANSLIT"))
+  
+  attributes(Tuits[[date]])$tzone <-tzone
+  
+  if (all(grepl("^$",Tuits$target))) {
+    TT <- aggregate(target~author, FUN = length, data=Tuits[Tuits$target=="",])
+    names(TT) <- c("name","Tweets")
+  }
+  
+  Messages <-
+    Tuits [Tuits$target=="" & Tuits$author!="",]
+  Messages <- Messages[order(Messages$date),]
+  if("location" %in% fields) Messages$location <- substr(Messages$location,1,50)
+  Messages <- Messages[!is.na(date), c("date", "author", "text")]
+  
+  
+  netMentions <- mention(Messages)
+  T.out <- as.data.frame(xtabs(X~Source,data=netMentions$links)); names(T.out) <- c("name","Mentions")
+  T.in <-  as.data.frame(xtabs(X~Target,data=netMentions$links)); names(T.in) <- c("name","Mentioned")
+  Graph <- toIgraph(netMentions)
+  
+  
+  
+  #T4 <- Sys.time() 
+  
+  Community <- membership(cluster_walktrap(Graph))
+  Authors <- data.frame(name=attr(Community,"name"), Walktrap=as.vector(Community), stringsAsFactors = FALSE)
+  Authors$Walktrap <- paste0("G-",sprintf("%03d",Authors$Walktrap))
+  highGroups <- names(sort(table(Authors$Walktrap),decreasing = TRUE))[1:16] # 16 number of high groups
+  Authors$Walktrap =ifelse(Authors$Walktrap %in% highGroups,Authors$Walktrap,"Rest")
+  
+  
+  tuits <- Tuits[,c("author", fields)]
+  AuthorsT <- aggregate(list(tuits[,fields]), by = list(tuits$author), max)
+  names(AuthorsT)[1]<-"name"
+  AuthorsT$link <- paste0('<a href="https://twitter.com/', 
+                          sub("^@","", AuthorsT$name),
+                          '" target="_blank">', 
+                          sub("^@","",AuthorsT$name),'</a>')
+  AuthorsT <- merge(AuthorsT, Authors, by="name", all.x=TRUE)
+  AuthorsT <- AuthorsT[, c("name","link", fields)]
+  
+  
+  Authors$Degree   <- strength(Graph)
+  Authors$label    <- ifelse(Authors$Degree>minlabel, as.character(Authors$name), "")
+  Authors$size     <- ifelse(Authors$Degree>2, Authors$Degree, 0)
+  Authors          <- merge(Authors, AuthorsT, by="name", all.x=TRUE)
+  if(exists("TT")) {
+    Authors<- merge(Authors, TT, by="name", all.x=TRUE)
+    Authors$Tweets    <- ifelse(is.na(Authors$Tweets), 0, Authors$Tweets)
+  }
+  else Authors$Tweets <- 0
+  Authors <- merge(Authors, T.out, by="name", all.x=TRUE)
+  Authors <- merge(Authors, T.in ,  by="name", all.x=TRUE)
+  Authors <- Authors[, c("name", "link", "Tweets", "Mentions", "Mentioned", "Degree", 
+                         fields, "Walktrap", "label", "size")]
+  
+  #T5 <- Sys.time() #E ----
+  
+  if (is.null(beginDate) || beginDate > max(Messages$date)) beginDate <- min(Messages$date)
+  if (is.null(endDate)   || endDate   < min(Messages$date))   endDate <- max(Messages$date)
+  
+  serie <- seq(as.POSIXct(beginDate)+ interval,as.POSIXct(endDate), interval)
+  
+  ncoin <- zoom <- main <- list()
+  nFrames <- ifelse(nFrames==Inf,length(serie),nFrames)
+  
+  for (i in 1:nFrames) {
+    serie <- serie[1:nFrames]
+    names(serie)[i]<-paste0("S",i)
+  }
+  
+  count <- 0
+  for(i in names(serie)) {
+    
+    count=count+1; cat('\r', sprintf("%5.1f",(count)/nFrames*100), 
+                       '% |', rep('=', (count) / 4), 
+                       ifelse(count ==nFrames, '|\n',  '>'), sep = '')
+    
+    arguments$main <-  paste0(title, " ", as.character(serie[i], format="%d/%m/%Y, %H:%M")) 
+    arguments$zoom  <- max(.50,arguments$zoom*(.985)^(count-1)) # .10 y .965
+    rets  <- Messages[Messages$date <= serie[i],]
+    
+    
+    tt <- # Original number of tweets by authorn
+      as.data.frame(table(Tuits[Tuits[[date]]<= serie[i] & Tuits$target=="",author]))
+    if(nrow(tt)==0) {
+      tt <- as.data.frame(table(Tuits[Tuits[[date]]<=serie[i],author]))
+      tt$Freq=0
+      
+    }
+    names(tt) <- c("name","tweets")
+    
+    ncoin[[i]] <- mention(Tuits[Tuits[[date]]<=serie[i],c(author, text)])
+    t.out <- as.data.frame(xtabs(X~Source, ncoin[[i]]$links)); names(t.out) <-c("name", "mentions")
+    t.in  <- as.data.frame(xtabs(X~Target,data=ncoin[[i]]$links)); names(t.in)  <-c("name", "mentioned")
+    
+    graph <- toIgraph(ncoin[[i]])
+    
+    community <- membership(cluster_walktrap(graph))
+    nodes <- data.frame(name=attr(community,"name"), walktrap=as.vector(community), stringsAsFactors = FALSE)
+    nodes$walktrap  <- paste0("G-",sprintf("%03d", nodes$walktrap))
+    nodes <- merge(nodes, t.out, by="name", sort=FALSE, all.x=TRUE)
+    nodes <- merge(nodes, t.in, by="name", sort=FALSE, all.x=TRUE)
+    nodes <- merge(nodes, Authors, by="name", sort=FALSE, all.x=TRUE)
+    nodes <- merge(nodes, tt, by="name", all.x=TRUE)
+    nodes$tweets    <- ifelse(is.na(nodes$tweets), 0, nodes$tweets)
+    nodes$mentions    <- ifelse(is.na(nodes$mentions), 0, nodes$mentions)
+    nodes$mentioned    <- ifelse(is.na(nodes$mentioned), 0, nodes$mentioned)
+    nodes <- nodes[,c("name","link", "tweets", "mentions", "mentioned",
+                      "Tweets", "Mentions","Mentioned", "Degree", 
+                      fields,
+                      "Walktrap", "walktrap", "size", "label")]
+    
+    ncoin[[i]]$nodes <- merge(ncoin[[i]]$nodes, nodes, by="name")
+    arguments$nodes <- ncoin[[i]]
+    ncoin[[i]] <- do.call(netCoin, arguments)
+  }
+  
+  ncoin[["mode"]] <- "frame"
+  if(exists("directory")) ncoin[["dir"]] <- directory
+  
+  #T6 <- Sys.time() #F ----
+  do.call(multigraphCreate, ncoin)
+  #T7 <- Sys.time() #G ----
+  
+  # lista <- list("Set-up"= T2-T1, "Sample"= T3-T2, "Red"= T4-T3, 
+  #              "Statistics"= T5-T4, "Loop"= T6-T5, "multigraph"= T7-T6, "Total"= T7-T1) # To check Sys.time() Add list to all <-
+  all <- list(Authors= Authors, Messages= Messages, Nets =ncoin)
+  return(all)
+}
+
+d_cotweet <-function(Tuits, author="author", text="text", date="date",
+                    fields=c("followers", "following", "stauses", "location"), searchers="@#",
+                    beginDate = NULL, endDate= NULL, interval= 3600, tzone = "Europe/Paris",
+                    nFrames = Inf, seed=1, n = min(5000,nrow(Tuits)/2), minlabel=5, ...) {
+  
+  arguments <- list(...)
+  
+  if(!exists("label",      arguments)) arguments$label <- "name"
+  if(!exists("size",       arguments)) arguments$size <- "Retweeted"
+  if(!exists("labelSize",  arguments)) arguments$labelSize <- "size"
+  if(!exists("color",      arguments)) arguments$color <- "Walktrap"
+  if(!exists("repulsion",  arguments)) arguments$repulsion <- 3
+  if(!exists("distance",   arguments)) arguments$distance <- 3
+  if(!exists("zoom",       arguments)) arguments$zoom <-1
+  if(!exists("main",       arguments)) arguments$main <- "Title"
+  if(!exists("note",       arguments)) arguments$note <- "Elaborated with netCoin"
+  if(!exists("showArrows", arguments)) arguments$showArrows <- TRUE
+  if( exists("dir",        arguments)) {
+    directory <- arguments$dir 
+    arguments$dir <- NULL
+  }
+  if("location" %in% fields) Tuits$location <- substr(Tuits$location,1,50)
+  
+  title <- arguments$main
+  
+  # T1 <- Sys.time() #A ----
+  
+  Tuits$target<-ifelse(grepl("^RT @",Tuits[[text]]),sub(".*(@.*?):[ ].*","\\1",Tuits[[text]]),"")
+  Tuits$author <- tolower(iconv(Tuits[[author]],to="ASCII//TRANSLIT"))
+  
+  attributes(Tuits[[date]])$tzone <-tzone
+  
+  if (all(grepl("^$",Tuits$target))) {
+    TT <- aggregate(target~author, FUN = length, data=Tuits[Tuits$target=="",])
+    names(TT) <- c("name","Tweets")
+  }
+  
+  Messages <-
+    Tuits [Tuits$target=="" & Tuits$author!="",]
+  Messages <- Messages[order(Messages$date),]
+  if("location" %in% fields) Messages$location <- substr(Messages$location,1,50)
+  Messages <- Messages[!is.na(date), c("date", "author", "text")]
+  
+  
+  netCoTweet <- cotweet(Messages, searchers=searchers)
+  # T.out <- as.data.frame(xtabs(X~Source,data=netCoTweet$links)); names(T.out) <- c("name","Mentions")
+  # T.in <-  as.data.frame(xtabs(X~Target,data=netCoTweet$links)); names(T.in) <- c("name","Mentioned")
+  Graph <- toIgraph(netCoTweet)
+  
+  
+  
+  #T4 <- Sys.time() 
+  
+  Community <- membership(cluster_walktrap(Graph))
+  Authors <- data.frame(name=attr(Community,"name"), Walktrap=as.vector(Community), stringsAsFactors = FALSE)
+  Authors$Walktrap <- paste0("G-",sprintf("%03d",Authors$Walktrap))
+  highGroups <- names(sort(table(Authors$Walktrap),decreasing = TRUE))[1:16] # 16 number of high groups
+  Authors$Walktrap =ifelse(Authors$Walktrap %in% highGroups,Authors$Walktrap,"Rest")
+  
+  
+  tuits <- Tuits[,c("author", fields)]
+  AuthorsT <- aggregate(list(tuits[,fields]), by = list(tuits$author), max)
+  names(AuthorsT)[1]<-"name"
+  AuthorsT$link <- paste0('<a href="https://twitter.com/', 
+                          sub("^@","", AuthorsT$name),
+                          '" target="_blank">', 
+                          sub("^@","",AuthorsT$name),'</a>')
+  AuthorsT <- merge(AuthorsT, Authors, by="name", all.x=TRUE)
+  AuthorsT <- AuthorsT[, c("name","link", fields)]
+  
+  
+  Authors$Degree   <- strength(Graph)
+  Authors$label    <- ifelse(Authors$Degree>minlabel, as.character(Authors$name), "")
+  Authors$size     <- ifelse(Authors$Degree>2, Authors$Degree, 0)
+  Authors          <- merge(Authors, AuthorsT, by="name", all.x=TRUE)
+  if(exists("TT")) {
+    Authors<- merge(Authors, TT, by="name", all.x=TRUE)
+    Authors$Tweets    <- ifelse(is.na(Authors$Tweets), 0, Authors$Tweets)
+  }
+  else Authors$Tweets <- 0
+  # Authors <- merge(Authors, T.out, by="name", all.x=TRUE)
+  # Authors <- merge(Authors, T.in ,  by="name", all.x=TRUE)
+  Authors <- Authors[, c("name", "link", "Tweets", "Degree", 
+                         fields, "Walktrap", "label", "size")]
+  
+  #T5 <- Sys.time() #E ----
+  
+  if (is.null(beginDate) || beginDate > max(Messages$date)) beginDate <- min(Messages$date)
+  if (is.null(endDate)   || endDate   < min(Messages$date))   endDate <- max(Messages$date)
+  
+  serie <- seq(as.POSIXct(beginDate)+ interval,as.POSIXct(endDate), interval)
+  
+  ncoin <- zoom <- main <- list()
+  nFrames <- ifelse(nFrames==Inf,length(serie),nFrames)
+  
+  for (i in 1:nFrames) {
+    serie <- serie[1:nFrames]
+    names(serie)[i]<-paste0("S",i)
+  }
+  
+  count <- 0
+  for(i in names(serie)) {
+    
+    count=count+1; cat('\r', sprintf("%5.1f",(count)/nFrames*100), 
+                       '% |', rep('=', (count) / 4), 
+                       ifelse(count ==nFrames, '|\n',  '>'), sep = '')
+    
+    arguments$main <-  paste0(title, " ", as.character(serie[i], format="%d/%m/%Y, %H:%M")) 
+    arguments$zoom  <- max(.50,arguments$zoom*(.985)^(count-1)) # .10 y .965
+    rets  <- Messages[Messages$date <= serie[i],]
+    
+    
+    tt <- # Original number of tweets by authorn
+      as.data.frame(table(Tuits[Tuits[[date]]<= serie[i] & Tuits$target=="",author]))
+    if(nrow(tt)==0) {
+      tt <- as.data.frame(table(Tuits[Tuits[[date]]<=serie[i],author]))
+      tt$Freq=0
+      
+    }
+    names(tt) <- c("name","tweets")
+    
+    ncoin[[i]] <- cotweet(Tuits[Tuits[[date]]<=serie[i],c(author, text)], searchers=searchers)
+    # t.out <- as.data.frame(xtabs(X~Source, ncoin[[i]]$links)); names(t.out) <-c("name", "mentions")
+    # t.in  <- as.data.frame(xtabs(X~Target,data=ncoin[[i]]$links)); names(t.in)  <-c("name", "mentioned")
+    
+    graph <- toIgraph(ncoin[[i]])
+    
+    community <- membership(cluster_walktrap(graph))
+    nodes <- data.frame(name=attr(community,"name"), walktrap=as.vector(community), stringsAsFactors = FALSE)
+    nodes$walktrap  <- paste0("G-",sprintf("%03d", nodes$walktrap))
+    # nodes <- merge(nodes, t.out, by="name", sort=FALSE, all.x=TRUE)
+    # nodes <- merge(nodes, t.in, by="name", sort=FALSE, all.x=TRUE)
+    nodes <- merge(nodes, Authors, by="name", sort=FALSE, all.x=TRUE)
+    nodes <- merge(nodes, tt, by="name", all.x=TRUE)
+    nodes$tweets    <- ifelse(is.na(nodes$tweets), 0, nodes$tweets)
+    # nodes$mentions    <- ifelse(is.na(nodes$mentions), 0, nodes$mentions)
+    # nodes$mentioned    <- ifelse(is.na(nodes$mentioned), 0, nodes$mentioned)
+    nodes <- nodes[,c("name","link", "tweets", "Tweets", "Degree", fields,
+                      "Walktrap", "walktrap", "size", "label")]
+    
+    ncoin[[i]]$nodes <- merge(ncoin[[i]]$nodes, nodes, by="name")
+    arguments$nodes <- ncoin[[i]]
+    ncoin[[i]] <- do.call(netCoin, arguments)
+  }
+  
+  ncoin[["mode"]] <- "frame"
+  if(exists("directory")) ncoin[["dir"]] <- directory
+  
+  #T6 <- Sys.time() #F ----
+  do.call(multigraphCreate, ncoin)
+  #T7 <- Sys.time() #G ----
+  
+  # lista <- list("Set-up"= T2-T1, "Sample"= T3-T2, "Red"= T4-T3, 
+  #              "Statistics"= T5-T4, "Loop"= T6-T5, "multigraph"= T7-T6, "Total"= T7-T1) # To check Sys.time() Add list to all <-
+  all <- list(Authors= Authors, Messages= Messages, Nets =ncoin)
+  return(all)
 }
 
 
@@ -489,325 +807,6 @@ d_retweet <-function(Tuits, author="author", text="text", date="date",
   # lista <- list("Set-up"= T2-T1, "Sample"= T3-T2, "Red"= T4-T3, 
   #              "Statistics"= T5-T4, "Loop"= T6-T5, "multigraph"= T7-T6, "Total"= T7-T1) # To check Sys.time() Add list to all <-
   all <- list(Authors= Authors, Messages= Messages, Retweets= RetuitsC, retweets= PRetuits, Nets =ncoin)
-  return(all)
-}
-
-
-tMention <-function(Tuits, author="author", text="text", date="date",
-                     fields=c("followers", "following", "stauses", "location"),
-                     beginDate = NULL, endDate= NULL, interval= 3600, tzone = "Europe/Paris",
-                     nFrames = Inf, seed=1, n = min(5000,nrow(Tuits)/2), minlabel=5, ...) {
-  
-  arguments <- list(...)
-  
-  if(!exists("label",      arguments)) arguments$label <- "name"
-  if(!exists("size",       arguments)) arguments$size <- "Retweeted"
-  if(!exists("labelSize",  arguments)) arguments$labelSize <- "size"
-  if(!exists("color",      arguments)) arguments$color <- "Walktrap"
-  if(!exists("repulsion",  arguments)) arguments$repulsion <- 3
-  if(!exists("distance",   arguments)) arguments$distance <- 3
-  if(!exists("zoom",       arguments)) arguments$zoom <-1
-  if(!exists("main",       arguments)) arguments$main <- "Title"
-  if(!exists("note",       arguments)) arguments$note <- "Elaborated with netCoin"
-  if(!exists("showArrows", arguments)) arguments$showArrows <- TRUE
-  if( exists("dir",        arguments)) {
-    directory <- arguments$dir 
-    arguments$dir <- NULL
-  }
-  if("location" %in% fields) Tuits$location <- substr(Tuits$location,1,50)
-  
-  title <- arguments$main
-  
-  # T1 <- Sys.time() #A ----
-  
-  Tuits$target<-ifelse(grepl("^RT @",Tuits[[text]]),sub(".*(@.*?):[ ].*","\\1",Tuits[[text]]),"")
-  Tuits$author <- tolower(iconv(Tuits[[author]],to="ASCII//TRANSLIT"))
-  
-  attributes(Tuits[[date]])$tzone <-tzone
-  
-  if (all(grepl("^$",Tuits$target))) {
-    TT <- aggregate(target~author, FUN = length, data=Tuits[Tuits$target=="",])
-    names(TT) <- c("name","Tweets")
-  }
-  
-  Messages <-
-    Tuits [Tuits$target=="" & Tuits$author!="",]
-  Messages <- Messages[order(Messages$date),]
-  if("location" %in% fields) Messages$location <- substr(Messages$location,1,50)
-  Messages <- Messages[!is.na(date), c("date", "author", "text")]
-  
-  
-  netMentions <- mentionCoin(Messages)
-  T.out <- as.data.frame(xtabs(X~Source,data=netMentions$links)); names(T.out) <- c("name","Mentions")
-  T.in <-  as.data.frame(xtabs(X~Target,data=netMentions$links)); names(T.in) <- c("name","Mentioned")
-  Graph <- toIgraph(netMentions)
-  
-  
-  
-  #T4 <- Sys.time() 
-  
-  Community <- membership(cluster_walktrap(Graph))
-  Authors <- data.frame(name=attr(Community,"name"), Walktrap=as.vector(Community), stringsAsFactors = FALSE)
-  Authors$Walktrap <- paste0("G-",sprintf("%03d",Authors$Walktrap))
-  highGroups <- names(sort(table(Authors$Walktrap),decreasing = TRUE))[1:16] # 16 number of high groups
-  Authors$Walktrap =ifelse(Authors$Walktrap %in% highGroups,Authors$Walktrap,"Rest")
-  
-  
-  tuits <- Tuits[,c("author", fields)]
-  AuthorsT <- aggregate(list(tuits[,fields]), by = list(tuits$author), max)
-  names(AuthorsT)[1]<-"name"
-  AuthorsT$link <- paste0('<a href="https://twitter.com/', 
-                          sub("^@","", AuthorsT$name),
-                          '" target="_blank">', 
-                          sub("^@","",AuthorsT$name),'</a>')
-  AuthorsT <- merge(AuthorsT, Authors, by="name", all.x=TRUE)
-  AuthorsT <- AuthorsT[, c("name","link", fields)]
-  
-  
-  Authors$Degree   <- strength(Graph)
-  Authors$label    <- ifelse(Authors$Degree>minlabel, as.character(Authors$name), "")
-  Authors$size     <- ifelse(Authors$Degree>2, Authors$Degree, 0)
-  Authors          <- merge(Authors, AuthorsT, by="name", all.x=TRUE)
-  if(exists("TT")) {
-    Authors<- merge(Authors, TT, by="name", all.x=TRUE)
-    Authors$Tweets    <- ifelse(is.na(Authors$Tweets), 0, Authors$Tweets)
-  }
-  else Authors$Tweets <- 0
-  Authors <- merge(Authors, T.out, by="name", all.x=TRUE)
-  Authors <- merge(Authors, T.in ,  by="name", all.x=TRUE)
-  Authors <- Authors[, c("name", "link", "Tweets", "Mentions", "Mentioned", "Degree", 
-                         fields, "Walktrap", "label", "size")]
-  
-  #T5 <- Sys.time() #E ----
-  
-  if (is.null(beginDate) || beginDate > max(Messages$date)) beginDate <- min(Messages$date)
-  if (is.null(endDate)   || endDate   < min(Messages$date))   endDate <- max(Messages$date)
-  
-  serie <- seq(as.POSIXct(beginDate)+ interval,as.POSIXct(endDate), interval)
-  
-  ncoin <- zoom <- main <- list()
-  nFrames <- ifelse(nFrames==Inf,length(serie),nFrames)
-  
-  for (i in 1:nFrames) {
-    serie <- serie[1:nFrames]
-    names(serie)[i]<-paste0("S",i)
-  }
-  
-  count <- 0
-  for(i in names(serie)) {
-    
-    count=count+1; cat('\r', sprintf("%5.1f",(count)/nFrames*100), 
-                       '% |', rep('=', (count) / 4), 
-                       ifelse(count ==nFrames, '|\n',  '>'), sep = '')
-    
-    arguments$main <-  paste0(title, " ", as.character(serie[i], format="%d/%m/%Y, %H:%M")) 
-    arguments$zoom  <- max(.50,arguments$zoom*(.985)^(count-1)) # .10 y .965
-    rets  <- Messages[Messages$date <= serie[i],]
-    
-    
-    tt <- # Original number of tweets by authorn
-      as.data.frame(table(Tuits[Tuits[[date]]<= serie[i] & Tuits$target=="",author]))
-    if(nrow(tt)==0) {
-      tt <- as.data.frame(table(Tuits[Tuits[[date]]<=serie[i],author]))
-      tt$Freq=0
-      
-    }
-    names(tt) <- c("name","tweets")
-    
-    ncoin[[i]] <- mentionCoin(Tuits[Tuits[[date]]<=serie[i],c(author, text)])
-    t.out <- as.data.frame(xtabs(X~Source, ncoin[[i]]$links)); names(t.out) <-c("name", "mentions")
-    t.in  <- as.data.frame(xtabs(X~Target,data=ncoin[[i]]$links)); names(t.in)  <-c("name", "mentioned")
-    
-    graph <- toIgraph(ncoin[[i]])
-    
-    community <- membership(cluster_walktrap(graph))
-    nodes <- data.frame(name=attr(community,"name"), walktrap=as.vector(community), stringsAsFactors = FALSE)
-    nodes$walktrap  <- paste0("G-",sprintf("%03d", nodes$walktrap))
-    nodes <- merge(nodes, t.out, by="name", sort=FALSE, all.x=TRUE)
-    nodes <- merge(nodes, t.in, by="name", sort=FALSE, all.x=TRUE)
-    nodes <- merge(nodes, Authors, by="name", sort=FALSE, all.x=TRUE)
-    nodes <- merge(nodes, tt, by="name", all.x=TRUE)
-    nodes$tweets    <- ifelse(is.na(nodes$tweets), 0, nodes$tweets)
-    nodes$mentions    <- ifelse(is.na(nodes$mentions), 0, nodes$mentions)
-    nodes$mentioned    <- ifelse(is.na(nodes$mentioned), 0, nodes$mentioned)
-    nodes <- nodes[,c("name","link", "tweets", "mentions", "mentioned",
-                      "Tweets", "Mentions","Mentioned", "Degree", 
-                      fields,
-                      "Walktrap", "walktrap", "size", "label")]
-    
-    ncoin[[i]]$nodes <- merge(ncoin[[i]]$nodes, nodes, by="name")
-    arguments$nodes <- ncoin[[i]]
-    ncoin[[i]] <- do.call(netCoin, arguments)
-  }
-  
-  ncoin[["mode"]] <- "frame"
-  if(exists("directory")) ncoin[["dir"]] <- directory
-  
-  #T6 <- Sys.time() #F ----
-  do.call(multigraphCreate, ncoin)
-  #T7 <- Sys.time() #G ----
-  
-  # lista <- list("Set-up"= T2-T1, "Sample"= T3-T2, "Red"= T4-T3, 
-  #              "Statistics"= T5-T4, "Loop"= T6-T5, "multigraph"= T7-T6, "Total"= T7-T1) # To check Sys.time() Add list to all <-
-  all <- list(Authors= Authors, Messages= Messages, Nets =ncoin)
-  return(all)
-}
-
-d_coexist <-function(Tuits, author="author", text="text", date="date",
-                    fields=c("followers", "following", "stauses", "location"), searchers="@#",
-                    beginDate = NULL, endDate= NULL, interval= 3600, tzone = "Europe/Paris",
-                    nFrames = Inf, seed=1, n = min(5000,nrow(Tuits)/2), minlabel=5, ...) {
-  
-  arguments <- list(...)
-  
-  if(!exists("label",      arguments)) arguments$label <- "name"
-  if(!exists("size",       arguments)) arguments$size <- "Retweeted"
-  if(!exists("labelSize",  arguments)) arguments$labelSize <- "size"
-  if(!exists("color",      arguments)) arguments$color <- "Walktrap"
-  if(!exists("repulsion",  arguments)) arguments$repulsion <- 3
-  if(!exists("distance",   arguments)) arguments$distance <- 3
-  if(!exists("zoom",       arguments)) arguments$zoom <-1
-  if(!exists("main",       arguments)) arguments$main <- "Title"
-  if(!exists("note",       arguments)) arguments$note <- "Elaborated with netCoin"
-  if(!exists("showArrows", arguments)) arguments$showArrows <- TRUE
-  if( exists("dir",        arguments)) {
-    directory <- arguments$dir 
-    arguments$dir <- NULL
-  }
-  if("location" %in% fields) Tuits$location <- substr(Tuits$location,1,50)
-  
-  title <- arguments$main
-  
-  # T1 <- Sys.time() #A ----
-  
-  Tuits$target<-ifelse(grepl("^RT @",Tuits[[text]]),sub(".*(@.*?):[ ].*","\\1",Tuits[[text]]),"")
-  Tuits$author <- tolower(iconv(Tuits[[author]],to="ASCII//TRANSLIT"))
-  
-  attributes(Tuits[[date]])$tzone <-tzone
-  
-  if (all(grepl("^$",Tuits$target))) {
-    TT <- aggregate(target~author, FUN = length, data=Tuits[Tuits$target=="",])
-    names(TT) <- c("name","Tweets")
-  }
-  
-  Messages <-
-    Tuits [Tuits$target=="" & Tuits$author!="",]
-  Messages <- Messages[order(Messages$date),]
-  if("location" %in% fields) Messages$location <- substr(Messages$location,1,50)
-  Messages <- Messages[!is.na(date), c("date", "author", "text")]
-  
-  
-  netCoTweet <- coTweetCoin(Messages, searchers=searchers)
-  # T.out <- as.data.frame(xtabs(X~Source,data=netCoTweet$links)); names(T.out) <- c("name","Mentions")
-  # T.in <-  as.data.frame(xtabs(X~Target,data=netCoTweet$links)); names(T.in) <- c("name","Mentioned")
-  Graph <- toIgraph(netCoTweet)
-  
-  
-  
-  #T4 <- Sys.time() 
-  
-  Community <- membership(cluster_walktrap(Graph))
-  Authors <- data.frame(name=attr(Community,"name"), Walktrap=as.vector(Community), stringsAsFactors = FALSE)
-  Authors$Walktrap <- paste0("G-",sprintf("%03d",Authors$Walktrap))
-  highGroups <- names(sort(table(Authors$Walktrap),decreasing = TRUE))[1:16] # 16 number of high groups
-  Authors$Walktrap =ifelse(Authors$Walktrap %in% highGroups,Authors$Walktrap,"Rest")
-  
-  
-  tuits <- Tuits[,c("author", fields)]
-  AuthorsT <- aggregate(list(tuits[,fields]), by = list(tuits$author), max)
-  names(AuthorsT)[1]<-"name"
-  AuthorsT$link <- paste0('<a href="https://twitter.com/', 
-                          sub("^@","", AuthorsT$name),
-                          '" target="_blank">', 
-                          sub("^@","",AuthorsT$name),'</a>')
-  AuthorsT <- merge(AuthorsT, Authors, by="name", all.x=TRUE)
-  AuthorsT <- AuthorsT[, c("name","link", fields)]
-  
-  
-  Authors$Degree   <- strength(Graph)
-  Authors$label    <- ifelse(Authors$Degree>minlabel, as.character(Authors$name), "")
-  Authors$size     <- ifelse(Authors$Degree>2, Authors$Degree, 0)
-  Authors          <- merge(Authors, AuthorsT, by="name", all.x=TRUE)
-  if(exists("TT")) {
-    Authors<- merge(Authors, TT, by="name", all.x=TRUE)
-    Authors$Tweets    <- ifelse(is.na(Authors$Tweets), 0, Authors$Tweets)
-  }
-  else Authors$Tweets <- 0
-  # Authors <- merge(Authors, T.out, by="name", all.x=TRUE)
-  # Authors <- merge(Authors, T.in ,  by="name", all.x=TRUE)
-  Authors <- Authors[, c("name", "link", "Tweets", "Degree", 
-                         fields, "Walktrap", "label", "size")]
-  
-  #T5 <- Sys.time() #E ----
-  
-  if (is.null(beginDate) || beginDate > max(Messages$date)) beginDate <- min(Messages$date)
-  if (is.null(endDate)   || endDate   < min(Messages$date))   endDate <- max(Messages$date)
-  
-  serie <- seq(as.POSIXct(beginDate)+ interval,as.POSIXct(endDate), interval)
-  
-  ncoin <- zoom <- main <- list()
-  nFrames <- ifelse(nFrames==Inf,length(serie),nFrames)
-  
-  for (i in 1:nFrames) {
-    serie <- serie[1:nFrames]
-    names(serie)[i]<-paste0("S",i)
-  }
-  
-  count <- 0
-  for(i in names(serie)) {
-    
-    count=count+1; cat('\r', sprintf("%5.1f",(count)/nFrames*100), 
-                       '% |', rep('=', (count) / 4), 
-                       ifelse(count ==nFrames, '|\n',  '>'), sep = '')
-    
-    arguments$main <-  paste0(title, " ", as.character(serie[i], format="%d/%m/%Y, %H:%M")) 
-    arguments$zoom  <- max(.50,arguments$zoom*(.985)^(count-1)) # .10 y .965
-    rets  <- Messages[Messages$date <= serie[i],]
-    
-    
-    tt <- # Original number of tweets by authorn
-      as.data.frame(table(Tuits[Tuits[[date]]<= serie[i] & Tuits$target=="",author]))
-    if(nrow(tt)==0) {
-      tt <- as.data.frame(table(Tuits[Tuits[[date]]<=serie[i],author]))
-      tt$Freq=0
-      
-    }
-    names(tt) <- c("name","tweets")
-    
-    ncoin[[i]] <- coTweetCoin(Tuits[Tuits[[date]]<=serie[i],c(author, text)], searchers=searchers)
-    # t.out <- as.data.frame(xtabs(X~Source, ncoin[[i]]$links)); names(t.out) <-c("name", "mentions")
-    # t.in  <- as.data.frame(xtabs(X~Target,data=ncoin[[i]]$links)); names(t.in)  <-c("name", "mentioned")
-    
-    graph <- toIgraph(ncoin[[i]])
-    
-    community <- membership(cluster_walktrap(graph))
-    nodes <- data.frame(name=attr(community,"name"), walktrap=as.vector(community), stringsAsFactors = FALSE)
-    nodes$walktrap  <- paste0("G-",sprintf("%03d", nodes$walktrap))
-    # nodes <- merge(nodes, t.out, by="name", sort=FALSE, all.x=TRUE)
-    # nodes <- merge(nodes, t.in, by="name", sort=FALSE, all.x=TRUE)
-    nodes <- merge(nodes, Authors, by="name", sort=FALSE, all.x=TRUE)
-    nodes <- merge(nodes, tt, by="name", all.x=TRUE)
-    nodes$tweets    <- ifelse(is.na(nodes$tweets), 0, nodes$tweets)
-    # nodes$mentions    <- ifelse(is.na(nodes$mentions), 0, nodes$mentions)
-    # nodes$mentioned    <- ifelse(is.na(nodes$mentioned), 0, nodes$mentioned)
-    nodes <- nodes[,c("name","link", "tweets", "Tweets", "Degree", fields,
-                      "Walktrap", "walktrap", "size", "label")]
-    
-    ncoin[[i]]$nodes <- merge(ncoin[[i]]$nodes, nodes, by="name")
-    arguments$nodes <- ncoin[[i]]
-    ncoin[[i]] <- do.call(netCoin, arguments)
-  }
-  
-  ncoin[["mode"]] <- "frame"
-  if(exists("directory")) ncoin[["dir"]] <- directory
-  
-  #T6 <- Sys.time() #F ----
-  do.call(multigraphCreate, ncoin)
-  #T7 <- Sys.time() #G ----
-  
-  # lista <- list("Set-up"= T2-T1, "Sample"= T3-T2, "Red"= T4-T3, 
-  #              "Statistics"= T5-T4, "Loop"= T6-T5, "multigraph"= T7-T6, "Total"= T7-T1) # To check Sys.time() Add list to all <-
-  all <- list(Authors= Authors, Messages= Messages, Nets =ncoin)
   return(all)
 }
 
