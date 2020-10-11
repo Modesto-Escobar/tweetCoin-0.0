@@ -16,7 +16,7 @@ calCentr(graph, measures=c("degree","closeness","betweenness","eigen"), order = 
   \item{order}{Sort the data.frame by "degree", "closeness", "betweenness" or "eigen".}
 }
 \details{
-This function reproduces some of the most significant classic Social Network Theory's centrality measures (see \href{https://www.cambridge.org/core/books/social-network-analysis/90030086891EB3491D096034684EFFB8}{Wasserman (1994)},  \href{https://www.sciencedirect.com/science/article/abs/pii/0378873378900217}{Freeman (1978)} or \href{https://www.sciencedirect.com/science/article/abs/pii/S0378873301000387}{Bonacich & Lloyd (2001)} to know more):
+This function reproduces some of the most significant classic Social Network Theory's centrality measures. See Wasserman (1994),  Freeman (1978), or Bonacich & Lloyd (2001) to know more:
 
 a) Degree =  Degree centrality is measured by the total amount of direct links with the other nodes.
 

@@ -21,22 +21,22 @@ prepare(data = data,
 }
 \details{
 
-This function performs the standard manipulation need to perform an analysis of data extracted from Twitter using TweetCoin. It converts the data obtained by the functions \code{\link[tweetCoin]{user_tweet}}, \code{\link[tweetCoin]{search_tweet}} or \code{\link[tweetCoin]{stream_tweet}} into a format legible by the rest of \code{\link{tweetCoin}} functions, specially those that allows to visualice the networks as \code{\link[mention]{stream_tweet}}, \code{\link[cotweet]{stream_tweet}} or \code{\link[retweet]{stream_tweet}}.
+This function performs the standard manipulation need to perform an analysis of data extracted from Twitter using TweetCoin. It converts the data obtained by the functions \code{\link[tweetCoin]{user_tweet}}, \code{\link[tweetCoin]{search_tweet}} or \code{\link[tweetCoin]{stream_tweet}} into a format legible by the rest of \code{\link[tweetCoin]{tweetCoin-package}} functions, specially those that allows to visualice the networks as \code{\link[tweetCoin]{mention}}, \code{\link[tweetCoin]{cotweet}} or \code{\link[tweetCoin]{retweet}}.
 
-The argument \info has different options:
+The argument \code{info} has different options:
 
-   if \info = "fields", the variables to be inclued will be "screen_name","text","created_at","is_quote" and "is_retweet".
+   if \code{info} = "fields", the variables to be inclued will be "screen_name","text","created_at","is_quote" and "is_retweet".
   
-   if \info = "cotweets", the variables to be inclueded will be "quoted_screen_name" and "retweet_screen_name".
+   if \code{info} = "cotweets", the variables to be inclueded will be "quoted_screen_name" and "retweet_screen_name".
    
-   if \info = "inform", the variables to be inclueded will be "followers_count", "friends_count" and "statuses_count".
+   if \code{info} = "inform", the variables to be inclueded will be "followers_count", "friends_count" and "statuses_count".
    
 There is the possibility of selecting all three options if needed.
 }
 
 
 \value{
-A cleaner data.frame with only the selected variables with a format legible by \code{\link{tweetCoin}} functions.
+A cleaner data.frame with only the selected variables with a format legible by \code{\link[tweetCoin]{tweetCoin-package}} functions.
 }
 \author{
 Modesto Escobar, Department of Sociology and Communication, University of Salamanca. See \url{https://sociocav.usal.es/blog/modesto-escobar/}
