@@ -39,7 +39,7 @@ Modesto Escobar, Department of Sociology and Communication, University of Salama
 ## the hashtag "#cuentalo":
 
 data(recuenta)
-R <- reTweetCoin(recuenta, "author", "text")
+R <- cotweet(recuenta, "author", "text")
 S <- calCentr(R, "all")
 
 S$nodes

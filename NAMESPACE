@@ -38,7 +38,7 @@ importFrom(netCoin, dichotomize, netCoin, allNet, surScat, edgeList, fromIgraph,
 importFrom(graphics, plot, text)
 importFrom(grDevices,hsv)
 importFrom(utils, head, tail, browseURL, download.file, URLencode, read.csv)
-importFrom(stats, runif, aggregate, ave)
+importFrom(stats, runif, aggregate, ave, xtabs)
 importFrom(igraph, graph.empty, V, E, add.vertices, vertex_attr, vertex_attr_names, list.vertex.attributes, get.vertex.attribute)
 importFrom(igraph, add.edges, edge_attr_names, list.edge.attributes, get.edgelist, get.edge.attribute, get.adjacency, graph_from_edgelist)
 importFrom(igraph, layout.davidson.harel, layout.drl, layout.circle, layout.fruchterman.reingold, layout.gem, layout.grid, layout.kamada.kawai)

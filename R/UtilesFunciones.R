@@ -194,16 +194,25 @@ filext <- function (fn) {
   ext
 }
 
+linkTwitter <- function(entity) {
+  link <- ""
+  link <- ifelse(substr(entity,1,1)=="@", paste0('<a href="https://twitter.com/', sub("^@","", entity), '" target="_blank">', 
+                                              sub("^@","",entity),'</a>'), link)
+  link <- ifelse(substr(entity,1,1)=="#", paste0('<a href="https://twitter.com/hashtag/', sub("^#","", entity), '" target="_blank">', 
+                                              sub("^#","",entity),'</a>'), link)
+  return(link)
+}
+
 hashtag_extract<- function(texto,characters="#@", excludeRT=TRUE, oldText=NULL, newText=NULL){
   charsearch <- paste0("[",characters,"][A-Za-z_0-9]{2,}")
   texto <- gsub("([.,;:])(\\S)","\\1 \\2", gsub("<.*>","",enc2native(texto)))
+  texto <- tolower(iconv(texto, to="ASCII//TRANSLIT"))
   if (excludeRT) texto <- sub("^RT .*?: (\\?)*[ ]*","",texto)
   hh <-function(texto,charsearch){
     paste(unlist(regmatches(texto, gregexpr(charsearch, texto, perl=TRUE))),collapse="|")
   }
   R <- sapply(texto,hh,charsearch)
   names(R) <- NULL
-  R <- tolower(iconv(R, to="ASCII//TRANSLIT"))
   R <- gsub("[[:punct:]]+$","",R)
   R <- gsub("[[:punct:]]+\\|","|",R)
   if (!is.null(oldText) & !is.null(newText)) R <- gsub(oldText,newText,R)
@@ -235,14 +244,24 @@ mention <- function(data, author="author", text="text", ...) {
 
 cotweet <- function(data, text="text", searchers="@#", original= TRUE, excludeRT=TRUE, min=1, others=NULL, oldText=NULL, newText=NULL, ...) {
   arguments <- list(...)
+  if(!exists("minimum", arguments)) minimum=1
+  if(!exists("minL", arguments)) minL=1
+  if(!exists("procedures", arguments)) procedures="frequencies"
+  if(!exists("criteria", arguments)) criteria="frequencies"
   X <- data[[text]]
   if (!original) X <- X[grepl("^RT @.*:", X)]
   D <- data.frame(Text=hashtag_extract(X, searchers, excludeRT, oldText, newText))
-  arguments$incidences <- dichotomize(D,"Text", sep="|", add=F, min=min, nas="None")
-  arguments$procedures <- "frequencies"
-  arguments$criteria   <- "frequencies"
-  if(!exists("minL", arguments)) arguments$minL <- min
-  return(do.call(allNet, arguments))
+  incidences <- dichotomize(D,"Text", sep="|", add=F, min=min, nas="None")
+  graph <- allNet(incidences, procedures=procedures, criteria=criteria, minimum=minimum, minL=minL)
+  if(grepl("(@#)|(#@)", searchers)) {
+    graph$nodes$type <- ifelse(grepl("^@",graph$nodes$name), "author", ifelse(grepl("^#", graph$nodes$name), "hashtag", "other"))
+    graph$nodes$link <- linkTwitter(graph$nodes$name)
+  }
+  if (!exists("community", arguments)) arguments$community <- "Walktrap"
+  if (!exists("color", arguments)) arguments$color  <- "community"
+  if (!exists("shape", arguments)) arguments$shape="type"
+  arguments$nodes  <- graph
+  do.call(netCoin, arguments)
 }
 
 
@@ -370,10 +389,7 @@ d_mention <-function(Tuits, author="author", text="text", date="date",
   tuits <- Tuits[,c("author", fields)]
   AuthorsT <- aggregate(list(tuits[,fields]), by = list(tuits$author), max)
   names(AuthorsT)[1]<-"name"
-  AuthorsT$link <- paste0('<a href="https://twitter.com/', 
-                          sub("^@","", AuthorsT$name),
-                          '" target="_blank">', 
-                          sub("^@","",AuthorsT$name),'</a>')
+  AuthorsT$link <- linkTweeter(AuthorsT$name)
   AuthorsT <- merge(AuthorsT, Authors, by="name", all.x=TRUE)
   AuthorsT <- AuthorsT[, c("name","link", fields)]
   
@@ -483,7 +499,7 @@ d_cotweet <-function(Tuits, author="author", text="text", date="date",
   if(!exists("zoom",       arguments)) arguments$zoom <-1
   if(!exists("main",       arguments)) arguments$main <- "Title"
   if(!exists("note",       arguments)) arguments$note <- "Elaborated with netCoin"
-  if(!exists("showArrows", arguments)) arguments$showArrows <- TRUE
+  if(!exists("showArrows", arguments)) arguments$showArrows <- FALSE
   if( exists("dir",        arguments)) {
     directory <- arguments$dir 
     arguments$dir <- NULL
@@ -530,18 +546,15 @@ d_cotweet <-function(Tuits, author="author", text="text", date="date",
   tuits <- Tuits[,c("author", fields)]
   AuthorsT <- aggregate(list(tuits[,fields]), by = list(tuits$author), max)
   names(AuthorsT)[1]<-"name"
-  AuthorsT$link <- paste0('<a href="https://twitter.com/', 
-                          sub("^@","", AuthorsT$name),
-                          '" target="_blank">', 
-                          sub("^@","",AuthorsT$name),'</a>')
-  AuthorsT <- merge(AuthorsT, Authors, by="name", all.x=TRUE)
-  AuthorsT <- AuthorsT[, c("name","link", fields)]
+  AuthorsT <- merge(AuthorsT, Authors[,-2, drop=FALSE], by="name", all.x=TRUE)
+  AuthorsT <- AuthorsT[, c("name", fields), drop=FALSE]
   
   
   Authors$Degree   <- strength(Graph)
   Authors$label    <- ifelse(Authors$Degree>minlabel, as.character(Authors$name), "")
   Authors$size     <- ifelse(Authors$Degree>2, Authors$Degree, 0)
   Authors          <- merge(Authors, AuthorsT, by="name", all.x=TRUE)
+  Authors$link <- linkTwitter(Authors$name)
   if(exists("TT")) {
     Authors<- merge(Authors, TT, by="name", all.x=TRUE)
     Authors$Tweets    <- ifelse(is.na(Authors$Tweets), 0, Authors$Tweets)
@@ -604,7 +617,7 @@ d_cotweet <-function(Tuits, author="author", text="text", date="date",
     nodes$tweets    <- ifelse(is.na(nodes$tweets), 0, nodes$tweets)
     # nodes$mentions    <- ifelse(is.na(nodes$mentions), 0, nodes$mentions)
     # nodes$mentioned    <- ifelse(is.na(nodes$mentioned), 0, nodes$mentioned)
-    nodes <- nodes[,c("name","link", "tweets", "Tweets", "Degree", fields,
+    nodes <- nodes[,c("name", "tweets", "Tweets", "Degree", fields,
                       "Walktrap", "walktrap", "size", "label")]
     
     ncoin[[i]]$nodes <- merge(ncoin[[i]]$nodes, nodes, by="name")
