@@ -17,7 +17,7 @@ prepareqda(data = data)
 A cleaner data.frame with only the selected variables with a format legible by \code{\link[tweetCoin]{tweetCoin-package}} functions.
 }
 \author{
-Modesto Escobar, Department of Sociology and Communication, University of Salamanca. See \url{https://sociocav.usal.es/blog/modesto-escobar/}
+Jose L.A. Berrocal,  University of Salamanca. See \url{http://berrocal.usal.es/}.
 }
 \examples{
 ## Load the prepared QDA dataset:
