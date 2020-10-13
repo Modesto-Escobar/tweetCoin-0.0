@@ -4,7 +4,7 @@
 Clean and prepare your Twitter data.
 }
 \description{
-This function performs the standard manipulation need to perform an analysis of data extracted from Twitter using TweetCoin.}
+This function performs the standard manipulation needed to perform an analysis of data extracted from Twitter using TweetCoin.}
 
 \usage{
 prepare(data = data, 
@@ -21,7 +21,7 @@ prepare(data = data,
 }
 \details{
 
-This function performs the standard manipulation need to perform an analysis of data extracted from Twitter using TweetCoin. It converts the data obtained by the functions \code{\link[tweetCoin]{user_tweet}}, \code{\link[tweetCoin]{search_tweet}} or \code{\link[tweetCoin]{stream_tweet}} into a format legible by the rest of \code{\link[tweetCoin]{tweetCoin-package}} functions, specially those that allows to visualice the networks as \code{\link[tweetCoin]{mention}}, \code{\link[tweetCoin]{cotweet}} or \code{\link[tweetCoin]{retweet}}.
+This function performs the standard manipulation need to do an analysis of data extracted from Twitter using TweetCoin. It converts the data obtained by the functions \code{\link[tweetCoin]{user_tweet}}, \code{\link[tweetCoin]{search_tweet}} or \code{\link[tweetCoin]{stream_tweet}} into a format legible by the rest of \code{\link[tweetCoin]{tweetCoin-package}} functions, specially those that allows to visualice the networks as \code{\link[tweetCoin]{mention}}, \code{\link[tweetCoin]{cotweet}} or \code{\link[tweetCoin]{retweet}}.
 
 The argument \code{info} has different options:
 

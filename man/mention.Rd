@@ -1,8 +1,6 @@
 \name{mention}
 \alias{mention}
-\title{
-Static netCoin graph of original authors and mentions
-}
+\title{Static netCoin graph of original authors and mentions}
 \description{
 This function produces a static network object from a data frame or matrix of tweets (original messages) conecting authors and mentions (@).
 }

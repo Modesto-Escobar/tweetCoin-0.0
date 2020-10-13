@@ -1,8 +1,8 @@
 \name{retweet}
 \alias{retweet}
-\title{netCoin graph of Retweets}
+\title{Static netCoin graph of retweets}
 \description{
-This function produces a network object from a data frame or matrix of retweets (RTs or shared messages) conecting profiles and retweets.
+This function produces a static network object from a data frame or matrix of retweets (RTs or shared messages) conecting profiles and retweets.
 }
 \usage{
 retweet(data, sender = "author", 

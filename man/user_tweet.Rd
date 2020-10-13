@@ -31,7 +31,7 @@ This function extracts the tweets published by a Twitter user. All the tweets ar
 The number of tweets to return per timeline should not exceed 3200 as Twitter limits returns to the most recent 3,200 statuses posted or retweeted by each user. 
 }
 \value{
-A .csv file with users data attribute.
+A .csv or .dat file with users data attributes.
 }
 \author{
 Jose L.A. Berrocal,  University of Salamanca. See \url{http://berrocal.usal.es/}
