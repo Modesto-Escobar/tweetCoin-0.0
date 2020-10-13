@@ -3,7 +3,7 @@
 \title{
 Wiki URL of an entry}
 \description{
-Obtain the Wikipedia URL of a name or entry.
+This functions creates the Wikipedia URL of a name or entry.
 }
 \usage{
 nametoWikiURL(name, language = "en")

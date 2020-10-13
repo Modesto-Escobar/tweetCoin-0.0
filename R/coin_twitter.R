@@ -73,9 +73,9 @@ search_tweet <- function(search, maxtweets = 300, type = "recent", include_rts =
   }
   else {
     datos_old<-read_twitter_csv(file = output_file_name, unflatten = TRUE)
-    ultimo_id <- datos_old[nrow(datos_old),]$status_id
+    ultimo_id <- datos_old[1,]$status_id
     ultimo_id = toString(as.bigz(ultimo_id) + 1)
-    datos_new <- search_tweets(search, n = maxtweets, type = type, include_rts = include_rts, geocode = geocode, max_id = ultimo_id, parse = parse, token = token, retryonratelimit = retryonratelimit, verbose = verbose)
+    datos_new <- search_tweets(search, n = maxtweets, type = type, include_rts = include_rts, geocode = geocode, since_id = ultimo_id, parse = parse, token = token, retryonratelimit = retryonratelimit, verbose = verbose)
     write_as_csv(x = datos_new, file_name = "./tmp.csv")
     datos_new<-read_twitter_csv(file = "./tmp.csv", unflatten = TRUE)
     datos_concatenados <- rbind(datos_old, datos_new)

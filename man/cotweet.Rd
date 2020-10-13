@@ -1,8 +1,8 @@
 \name{cotweet}
 \alias{cotweet}
-\title{netCoin graph of original tweets}
+\title{Static netCoin graph of original tweets}
 \description{
-This function produces a network object from a data frame or matrix of tweets (original messages) coincidendes, conecting mentions and hashtags.
+This function produces a static network object from a data frame or matrix of tweets (original messages) coincidendes, conecting mentions and hashtags.
 }
 \usage{
 cotweet(data, text, searchers = "@#", 

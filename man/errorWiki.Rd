@@ -4,7 +4,7 @@
 Download and check errors in Wikipedia
 }
 \description{
-Downloads the Wiki pages and discovers if there are any naming errors in Wikipedia.
+This function downloads the Wiki pages and discovers if there are any naming errors in Wikipedia.
 }
 \usage{
 errorWiki(X, language = c( "es", "en", "fr"), maxtime = 0)

@@ -2,7 +2,7 @@
 \alias{cc}
 \title{List to character converter}
 \description{
-Convert a list into a vector of characters.
+This function converts a list into a vector of characters.
 }
 \usage{
 cc(wordlist)

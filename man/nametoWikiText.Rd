@@ -2,7 +2,7 @@
 \alias{nametoWikiText}
 \title{Wiki html link of an entry}
 \description{
-Convert names into a Wikipedia's html link.
+This function converts names into a Wikipedia's html link.
 }
 \usage{
 nametoWikiText(name, language = "en")
