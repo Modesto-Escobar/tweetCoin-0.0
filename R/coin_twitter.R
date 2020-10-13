@@ -174,3 +174,9 @@ prepare <- function(data=data, info=c("fields", "cotweets", "inform"), original=
   return(newdata)
 }
 
+prueba <- function (datos)
+{
+  print (datos)
+}
+  
+
