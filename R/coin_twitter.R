@@ -39,8 +39,8 @@ load_tweets <- function(name, type = "user", format = "binary"){
     
   } else if (format == "delimited")
   {
-    data_tweets<-read_twitter_csv(file = output_file_name, unflatten = FALSE)
-    return(data_tweets)
+    tuits<-read_twitter_csv(file = output_file_name, unflatten = FALSE)
+    return(tuits)
     
   }
   
