@@ -231,9 +231,37 @@ prepare <- function(data=data, info=c("fields", "cotweets", "inform"), original=
   return(newdata)
 }
 
-prueba <- function (datos)
+prepareqda <- function(data=data)
 {
-  print (datos)
-}
   
+  newdata <- data.frame("Caso #" = "", "Caso" = "", "Variable" = "TWEET_TEXT", "PᲲafo" = "1", "No de resultados" = "0", "NO_CODES" = "")
+  newdata <- cbind (newdata, data %>% select(text, created_at, status_id, source, retweet_count, favorite_count, geo_coords))
+  names(newdata)[7:dim(newdata)[2]] <- c("Texto", "TWEET_DATE", "TWEET_ID", "SOURCE", "RETWEETS", "FAVORITES", "LONGITUDE")
+  
+  newdata <- cbind (newdata, data %>% select(geo_coords, user_id, name, screen_name))
+  
+  names(newdata)[14:dim(newdata)[2]] <- c("LATITUDE", "USER_ID", "USER_NAME", "SCR_NAME")
+  
+  newdata <- cbind (newdata, data %>% select(location, description, status_url, followers_count, friends_count, listed_count, account_created_at, favourites_count, 
+                                             country, statuses_count, profile_image_url, name, is_retweet))
+  names(newdata)[18:dim(newdata)[2]] <- c("LOCATION", "DESC", "URL", "FOLLOWERS", "FRIENDS", "LISTED", "USER_DATE", "USER_FAV", "TIMEZONE","TWEETS", "IMAGE", "NOMBRE", "T_RT")
+  
+  newdata$TIMEZONE <- "null"
+  
+  
+  newdata$T_RT <- ifelse(newdata$T_RT, "RT", "Tweet")
+  
+  newdata$Caso.. <-row.names(newdata)
+  newdata$Caso <- paste("Case: ", row.names(newdata))
+ 
+  
+  for (i in 1:nrow(newdata))
+  {
+    newdata[i,13] <- ifelse(newdata[i,13] == "NA NA", "NA", strsplit(newdata[i,13]," ")[[1]][1])
+    newdata[i,14] <-  ifelse(newdata[i,14] == "NA NA", "NA", strsplit(newdata[i,14]," ")[[1]][2])
+  }
+  
+  
+  return(newdata)
+}
 
