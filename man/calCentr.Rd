@@ -1,9 +1,6 @@
 \name{calCentr}
 \alias{calCentr}
-
-\title{
-Categorize a network.
-}
+\title{Categorize a network}
 \description{
 This function explores and catalogues a network.
 }

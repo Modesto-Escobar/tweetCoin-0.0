@@ -1,6 +1,6 @@
 \name{search_tweet}
 \alias{search_tweet}
-\title{Search tweets using a term.}
+\title{Search tweets using a term}
 \description{
 Search and download the tweets using a term, name or hashtag.
 }

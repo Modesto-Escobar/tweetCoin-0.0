@@ -1,8 +1,6 @@
 \name{load_tweets}
 \alias{load_tweets}
-\title{
-Import CSV Twitter data
-}
+\title{Import CSV Twitter data}
 \description{
 Reads Twitter data that was previously saved as a .CSV file and converts it into a data.frame.
 }
