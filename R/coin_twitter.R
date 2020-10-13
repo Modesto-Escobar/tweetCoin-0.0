@@ -92,19 +92,19 @@ user_tweet <- function(user, maxtweets = 100, home = FALSE, parse = TRUE, check 
                               home = home, parse = parse, check = check, token = token, include_rts = include_rts)
     write_as_csv(x = datos_new, file_name = "./tmp.csv")
     datos_new<-read_twitter_csv(file = "./tmp.csv", unflatten = TRUE)
-    datos_new <- rbind(datos_old, datos_new)
+    tuits <- rbind(datos_new, datos_old)
     if (format == "binary")
     {
-      datos_new <- 
-      save( datos_new, file=output_file_name)
+      
+      save( tuits, file=output_file_name)
       
     } else if (format == "delimited")
     {
-      write_as_csv(x = datos_new, file_name = output_file_name)
+      write_as_csv(x = tuits, file_name = output_file_name)
       
     }
     
-    print(paste("Numero total de tweets:", nrow(datos_concatenados)))
+    print(paste("Numero total de tweets:", nrow(tuits)))
     print(paste("Numero de tweets nuevos:", nrow(datos_new)))
   }
 }
