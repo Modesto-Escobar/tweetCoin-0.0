@@ -37,7 +37,7 @@ load_tweets <- function(name, type = "user", format = "binary"){
   {
     load(output_file_name, .GlobalEnv )
     
-  } else if (format == "delimites")
+  } else if (format == "delimited")
   {
     data_tweets<-read_twitter_csv(file = output_file_name, unflatten = FALSE)
     return(data_tweets)
@@ -98,7 +98,7 @@ user_tweet <- function(user, maxtweets = 100, home = FALSE, parse = TRUE, check 
       datos_new <- 
       save( datos_new, file=output_file_name)
       
-    } else if (format == "delimites")
+    } else if (format == "delimited")
     {
       write_as_csv(x = datos_new, file_name = output_file_name)
       
