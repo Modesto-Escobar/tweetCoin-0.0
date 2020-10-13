@@ -259,7 +259,7 @@ cotweet <- function(data, text="text", searchers="@#", original= TRUE, excludeRT
   }
   if (!exists("community", arguments)) arguments$community <- "Walktrap"
   if (!exists("color", arguments)) arguments$color  <- "community"
-  if (!exists("shape", arguments)) arguments$shape="type"
+  if (!exists("shape", arguments) & grepl("(@#)|(#@)", searchers)) arguments$shape="type"
   arguments$nodes  <- graph
   do.call(netCoin, arguments)
 }
@@ -389,7 +389,7 @@ d_mention <-function(Tuits, author="author", text="text", date="date",
   tuits <- Tuits[,c("author", fields)]
   AuthorsT <- aggregate(list(tuits[,fields]), by = list(tuits$author), max)
   names(AuthorsT)[1]<-"name"
-  AuthorsT$link <- linkTweeter(AuthorsT$name)
+  AuthorsT$link <- linkTwitter(AuthorsT$name)
   AuthorsT <- merge(AuthorsT, Authors, by="name", all.x=TRUE)
   AuthorsT <- AuthorsT[, c("name","link", fields)]
   

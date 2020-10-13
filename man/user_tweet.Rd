@@ -11,7 +11,8 @@ user_tweet (user, maxtweets = 100,
                   home = FALSE, parse = TRUE, 
                   check = TRUE, token = NULL, 
                   include_rts = FALSE, 
-                  output_file_name = NULL)
+                  output_file_name = NULL,
+                  format = c("binary","delimited"))
 }
 \arguments{
   \item{user}{Twitter user(s) identificator (target).}
@@ -22,6 +23,7 @@ user_tweet (user, maxtweets = 100,
   \item{token}{File containing our Twitter tokens (Check \code{\link[rtweet]{search_tweets}} for more info).}
   \item{include_rts}{Include rtweets made by the user (default = FALSE).}
   \item{output_file_name}{Name of the output writting file.}
+  \item{format}{It could be "binary"" or "delimited" (plain text).}
 }
 \details{
 This function extracts the tweets published by a Twitter user. All the tweets are saved into a .csv file. If there is a file with the same name, it reads it, the extracted tweets are concadenated sequentially and overwrites it. If the archive file name is not specified, a default name is created.

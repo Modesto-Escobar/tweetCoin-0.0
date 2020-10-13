@@ -7,11 +7,12 @@ Import CSV Twitter data
 Reads Twitter data that was previously saved as a .CSV file and converts it into a data.frame.
 }
 \usage{
-load_tweets(name, type = "user")
+load_tweets(name, type = c("user","search","stream"), format = c("binary","delimited"))
 }
 \arguments{
   \item{name}{Name of CSV file containing the data.}
-  \item{type}{Type of data to be readed. Default = "timeline" (for a user profile), other options are "streaming" (for streaming tweets) and search (for queries and/or hashtags). See details.}
+  \item{type}{Type of data to be readed. Default = "user" (for a user profile), other options are "stream" (for streaming tweets) and search (for queries and/or hashtags). See details.}
+  \item{format}{It could be "binary"" or "delimited" (plain text).}
 }
 \details{
 Use type = "timeline" when using \code{\link[tweetCoin]{user_tweet}} function (tweets and information from concrete users), type = "streaming" when using \code{\link[tweetCoin]{search_tweet}} function (tweets containing a specific word or set of words) and use "search" when using \code{\link[tweetCoin]{stream_tweet}} function (for a live stream recollection of Twitter data). See examples.
