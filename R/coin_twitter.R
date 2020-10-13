@@ -86,7 +86,7 @@ user_tweet <- function(user, maxtweets = 100, home = FALSE, parse = TRUE, check 
     }
     
     
-    ultimo_id <- datos_old[nrow(datos_old), ]$status_id
+    ultimo_id <- datos_old[1, ]$status_id
     ultimo_id = toString(as.bigz(ultimo_id) + 1)
     datos_new <- get_timeline(user = user, n = maxtweets, since_id = ultimo_id,
                               home = home, parse = parse, check = check, token = token, include_rts = include_rts)
