@@ -61,7 +61,7 @@ user_tweet <- function(user, maxtweets = 100, home = FALSE, parse = TRUE, check 
   }
 }
 
-search_tweet <- function(search, maxtweets = 300, type = "recent", include_rts = TRUE, geocode = NULL, max_id = NULL, 
+search_tweet <- function(search, maxtweets = 300, type = "recent", include_rts = TRUE, geocode = NULL, since_id = NULL, 
                          parse = TRUE, token = NULL, retryonratelimit = FALSE, verbose = TRUE, output_file_name = NULL) {
   if(is.null(output_file_name)) output_file_name <- paste0("search_tweets_", search, ".csv")
   if(!(output_file_name %in% list.files())) {

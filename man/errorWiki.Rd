@@ -7,11 +7,12 @@ Download and check errors in Wikipedia
 This function downloads the Wiki pages and discovers if there are any naming errors in Wikipedia.
 }
 \usage{
-errorWiki(X, language = c( "es", "en", "fr"), maxtime = 0)
+errorWiki(X, language = c( "es", "en", "fr"), directory="./", maxtime = 0)
 }
 \arguments{
   \item{X}{A vector consisting of one or more Wikipedia's entry (i.e., topic or person).}
   \item{language}{The language of the Wikipedia page version. This should consist of an ISO language code.}
+  \item{directory}{Directory}
   \item{maxtime}{Max time interval between one check and the following.}
 }
 \details{

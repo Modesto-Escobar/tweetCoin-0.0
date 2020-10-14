@@ -32,12 +32,12 @@ urltoInfo <- function(url){
 preName <- function(X) sub("(^.*),\\s*(.*$)","\\2 \\1", X)
 
 
-errorWiki <- function(X, language=c("es", "en", "fr"), maxtime=0) {
+errorWiki <- function(X, language=c("es", "en", "fr"), directory="./", maxtime=0) {
   errores <- NULL
   for (I in X){
     person <- gsub(" ", "_", I)
     url <-paste("https://",language,".wikipedia.org/wiki/",person,sep="")
-    file <- paste0("./paginas/",person,".html")
+    file <- paste0(directory, person,".html")
     oldw <- getOption("warn")
     options(warn = -1)
     E <- tryCatch(download.file(url,destfile=file, quiet=TRUE),error = function(e) person)
