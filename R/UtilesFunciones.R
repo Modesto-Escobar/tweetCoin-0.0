@@ -264,6 +264,22 @@ cotweet <- function(data, text="text", searchers="@#", original= TRUE, excludeRT
   do.call(netCoin, arguments)
 }
 
+cotext <- function(data, text="text", sep=" ", min=1, ...) {
+  arguments <- list(...)
+  if(!exists("minimum", arguments)) minimum=1 else minimum <- arguments$minimum; arguments$minimum <- NULL
+  if(!exists("maxL", arguments)) maxL <-  Inf else maxL <- arguments$maxL; arguments$maxL <- NULL
+  if(!exists("minL", arguments)) minL <- -Inf else minL <- arguments$minL; arguments$minL <- NULL
+  if(!exists("support", arguments)) support <- -Inf else support <- arguments$support; arguments$support <- NULL
+  if(!exists("procedures", arguments)) procedures="frequencies" else procedures <- arguments$procedures; arguments$procedures <- NULL
+  if(!exists("criteria", arguments)) criteria="frequencies" else criteria <- arguments$criteria; arguments$criteria <- NULL
+  incidences <- dichotomize(data, text, sep=sep, add=F, min=min, nas="None")
+  graph <- allNet(incidences, procedures=procedures, criteria=criteria, minimum=minimum, minL=minL, maxL=maxL, support=support)
+  if (!exists("community", arguments)) arguments$community <- "Walktrap"
+  if (!exists("color", arguments)) arguments$color  <- "community"
+  arguments$nodes  <- graph
+  do.call(netCoin, arguments)
+}
+
 
 retweet <- function(data, sender="author", text="text", language="en", nodes=NULL, ...){
   X <- data[grepl("^RT ",data[[text]]), c(sender, text)]
@@ -638,6 +654,96 @@ d_cotweet <-function(Tuits, author="author", text="text", date="date",
   return(all)
 }
 
+d_cotext <-function(data, text="text", sep=" ", min=1, date="date",
+                     beginDate = NULL, endDate= NULL, interval= 3600, tzone = "Europe/Paris",
+                     nFrames = Inf, seed=1, n = min(5000,nrow(Tuits)/2), minlabel=5, ...) {
+  
+  arguments <- list(...)
+  
+  if(!exists("minimum", arguments)) minimum=1 else minimum <- arguments$minimum; arguments$minimum <- NULL
+  if(!exists("maxL", arguments)) maxL <-  Inf else maxL <- arguments$maxL; arguments$maxL <- NULL
+  if(!exists("minL", arguments)) minL <- -Inf else minL <- arguments$minL; arguments$minL <- NULL
+  if(!exists("support", arguments)) support <- -Inf else support <- arguments$support; arguments$support <- NULL
+  if(!exists("procedures", arguments)) procedures="frequencies" else procedures <- arguments$procedures; arguments$procedures <- NULL
+  if(!exists("criteria", arguments)) criteria="frequencies" else criteria <- arguments$criteria; arguments$criteria <- NULL
+  if(!exists("community", arguments))  community <- "Walktrap"
+  if(!exists("color", arguments))      color     <- "community"
+   
+  if(!exists("label",      arguments)) arguments$label <- "name"
+  if(!exists("size",       arguments)) arguments$size <- "size"
+  if(!exists("labelSize",  arguments)) arguments$labelSize <- "size"
+  if(!exists("color",      arguments)) arguments$color <- "Walktrap"
+  if(!exists("repulsion",  arguments)) arguments$repulsion <- 3
+  if(!exists("distance",   arguments)) arguments$distance <- 3
+  if(!exists("zoom",       arguments)) arguments$zoom <-1
+  if(!exists("main",       arguments)) arguments$main <- "Title"
+  if(!exists("note",       arguments)) arguments$note <- "Elaborated with netCoin"
+  if(!exists("showArrows", arguments)) arguments$showArrows <- FALSE
+  if( exists("dir",        arguments)) {
+    directory <- arguments$dir 
+    arguments$dir <- NULL
+  }
+
+  
+  title <- arguments$main
+  
+  # T1 <- Sys.time() #A ----
+  
+  attributes(data[[date]])$tzone <-tzone
+  incidences <- dichotomize(data, text, sep=sep, add=F, min=min, nas="None")
+  graph <- allNet(incidences, procedures=procedures, criteria=criteria, minimum=minimum, minL=minL, maxL=maxL, support=support,
+                  community=community, color=color)
+  names(graph$nodes) <- c("name", paste0("Accum-", names(graph$nodes[2])),community)
+
+  #T5 <- Sys.time() #E ----
+  
+  if (is.null(beginDate) || beginDate > max(data[[date]])) beginDate <- min(data[[date]])
+  if (is.null(endDate)   || endDate   < min(data[[date]]))   endDate <- max(data[[date]])
+  
+  serie <- seq(as.POSIXct(beginDate)+ interval,as.POSIXct(endDate), interval)
+  
+  ncoin <- zoom <- main <- list()
+  nFrames <- ifelse(nFrames==Inf,length(serie),nFrames)
+  
+  for (i in 1:nFrames) {
+    serie <- serie[1:nFrames]
+    names(serie)[i]<-paste0("S",i)
+  }
+  
+  count <- 0
+  for(i in names(serie)) {
+    
+    count=count+1; cat('\r', sprintf("%5.1f",(count)/nFrames*100), 
+                       '% |', rep('=', (count) / 4), 
+                       ifelse(count ==nFrames, '|\n',  '>'), sep = '')
+    
+    arguments$main <-  paste0(title, " ", as.character(serie[i], format="%d/%m/%Y, %H:%M")) 
+    arguments$zoom  <- max(.50,arguments$zoom*(.985)^(count-1)) # .10 y .965
+    incs  <- incidences[data[[date]] <= serie[i],]
+    
+    
+
+    ncoin[[i]] <- allNet(incs, procedures=procedures, criteria=criteria, minimum=minimum, minL=minL, maxL=maxL, support=support,
+                         community=community, color=color)
+    ncoin[[i]]$nodes <- merge(ncoin[[i]]$nodes, graph$nodes)
+    arguments$nodes <- ncoin[[i]]
+    ncoin[[i]] <- do.call(netCoin, arguments)
+  }
+  
+  ncoin[["mode"]] <- "frame"
+  if(exists("directory")) ncoin[["dir"]] <- directory
+  
+  #T6 <- Sys.time() #F ----
+  do.call(multigraphCreate, ncoin)
+  #T7 <- Sys.time() #G ----
+  
+  # lista <- list("Set-up"= T2-T1, "Sample"= T3-T2, "Red"= T4-T3, 
+  #              "Statistics"= T5-T4, "Loop"= T6-T5, "multigraph"= T7-T6, "Total"= T7-T1) # To check Sys.time() Add list to all <-
+  all <- structure(ncoin, class="multigraph")
+  return(all)
+}
+
+
 
 d_retweet <-function(Tuits, author="author", text="text", date="date",
                    fields=c("followers", "following", "stauses", "location"),
@@ -842,3 +948,5 @@ toRmessages <- function(retuits, author="author", target="target", date="date", 
   RetuitsC$message <- paste(sub("^@","",RetuitsC$Target),sprintf("%03d",RetuitsC$message),sep="#")
   RetuitsC <- RetuitsC[order(RetuitsC$Retweets, decreasing= TRUE),c("text","Source","Target", "message", "Retweets", "Date", "last.Date")]
 }
+
+
