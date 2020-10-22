@@ -489,13 +489,12 @@ d_mention <-function(Tuits, author="author", text="text", date="date",
   ncoin[["mode"]] <- "frame"
   if(exists("directory")) ncoin[["dir"]] <- directory
   
-  #T6 <- Sys.time() #F ----
-  do.call(multigraphCreate, ncoin)
   #T7 <- Sys.time() #G ----
   
   # lista <- list("Set-up"= T2-T1, "Sample"= T3-T2, "Red"= T4-T3, 
   #              "Statistics"= T5-T4, "Loop"= T6-T5, "multigraph"= T7-T6, "Total"= T7-T1) # To check Sys.time() Add list to all <-
-  all <- list(Authors= Authors, Messages= Messages, Nets =ncoin)
+  Frames <- structure(ncoin, class="multigraph")
+  all <- list(authors= Authors, messages= Messages, nets = Frames)
   return(all)
 }
 
@@ -644,13 +643,12 @@ d_cotweet <-function(Tuits, author="author", text="text", date="date",
   ncoin[["mode"]] <- "frame"
   if(exists("directory")) ncoin[["dir"]] <- directory
   
-  #T6 <- Sys.time() #F ----
-  do.call(multigraphCreate, ncoin)
   #T7 <- Sys.time() #G ----
   
   # lista <- list("Set-up"= T2-T1, "Sample"= T3-T2, "Red"= T4-T3, 
   #              "Statistics"= T5-T4, "Loop"= T6-T5, "multigraph"= T7-T6, "Total"= T7-T1) # To check Sys.time() Add list to all <-
-  all <- list(Authors= Authors, Messages= Messages, Nets =ncoin)
+  Frames <- structure(ncoin, class="multigraph")
+  all <- list(authors= Authors, messages= Messages, nets = Frames)
   return(all)
 }
 
@@ -670,8 +668,8 @@ d_cotext <-function(data, text="text", sep=" ", min=1, date="date",
   if(!exists("color", arguments))      color     <- "community"
    
   if(!exists("label",      arguments)) arguments$label <- "name"
-  if(!exists("size",       arguments)) arguments$size <- "size"
-  if(!exists("labelSize",  arguments)) arguments$labelSize <- "size"
+  if(!exists("size",       arguments)) arguments$size <- "frequencies"
+  if(!exists("labelSize",  arguments)) arguments$labelSize <- "degree"
   if(!exists("color",      arguments)) arguments$color <- "Walktrap"
   if(!exists("repulsion",  arguments)) arguments$repulsion <- 3
   if(!exists("distance",   arguments)) arguments$distance <- 3
@@ -693,8 +691,16 @@ d_cotext <-function(data, text="text", sep=" ", min=1, date="date",
   incidences <- dichotomize(data, text, sep=sep, add=F, min=min, nas="None")
   graph <- allNet(incidences, procedures=procedures, criteria=criteria, minimum=minimum, minL=minL, maxL=maxL, support=support,
                   community=community, color=color)
+  arguments$nodes <- graph
+  graph <- do.call(netCoin, arguments)
   tnodes <- graph$nodes
-  names(tnodes) <- c("name", paste0("Accum-", names(graph$nodes[2])),community)
+  names(tnodes) <-sub("%","Acum-%",names(tnodes))
+  names(tnodes) <-sub("community",community,names(tnodes))
+  if(!is.null(graph$links)){
+  Degree <- as.data.frame(table(data.frame(nodes=c(graph$links$Source,graph$links$Target)))); names(Degree) <- c("name", "Degree")
+  }
+  else Degree <- data.frame(Degree=NULL)
+  tnodes <- merge(tnodes,Degree)
 
   #T5 <- Sys.time() #E ----
   
@@ -724,13 +730,17 @@ d_cotext <-function(data, text="text", sep=" ", min=1, date="date",
     
     
     if(count<length(serie)){
-    ncoin[[i]] <- allNet(incs, procedures=procedures, criteria=criteria, minimum=minimum, minL=minL, maxL=maxL, support=support,
+      ncoin[[i]] <- allNet(incs, procedures=procedures, criteria=criteria, minimum=minimum, minL=minL, maxL=maxL, support=support,
                          community=community, color=color)
+      ncoin[[i]]$nodes <- merge(ncoin[[i]]$nodes, tnodes)
+      arguments$nodes <- ncoin[[i]]
+      ncoin[[i]] <- do.call(netCoin, arguments)
     }
-    else ncoin[[i]] <- graph
-    ncoin[[i]]$nodes <- merge(ncoin[[i]]$nodes, tnodes)
-    arguments$nodes <- ncoin[[i]]
-    ncoin[[i]] <- do.call(netCoin, arguments)
+    else {
+      ncoin[[i]] <- graph
+      ncoin[[i]]$nodes <- merge(ncoin[[i]]$nodes, tnodes)
+      names(ncoin[[i]]$nodes) <- names(ncoin[[1]]$nodes)
+    }
   }
   
   ncoin[["mode"]] <- "frame"
@@ -920,17 +930,18 @@ d_retweet <-function(Tuits, author="author", text="text", date="date",
   ncoin[["mode"]] <- "frame"
   if(exists("directory")) ncoin[["dir"]] <- directory
   
-  #T6 <- Sys.time() #F ----
-  do.call(multigraphCreate, ncoin)
   #T7 <- Sys.time() #G ----
   
   # lista <- list("Set-up"= T2-T1, "Sample"= T3-T2, "Red"= T4-T3, 
   #              "Statistics"= T5-T4, "Loop"= T6-T5, "multigraph"= T7-T6, "Total"= T7-T1) # To check Sys.time() Add list to all <-
-  all <- list(Authors= Authors, Messages= Messages, Retweets= RetuitsC, retweets= PRetuits, Nets =ncoin)
+  Frames <- structure(ncoin, class="multigraph")
+  all <- list(authors= Authors, messages= Messages, Retweets= RetuitsC, retweets= PRetuits, nets =Frames)
   return(all)
 }
 
-
+plot.multigraph <- function(multigraph) {
+  do.call(multigraphCreate, multigraph)
+}
 toRetuits <- function(tuits, author="author", target="target", date="date", text="text", fields=NULL) {
   Retuits <- tuits[tuits[[target]]!="" & tuits[[author]]!="" & !is.na(tuits[[date]]),c(date,author, target, text, fields),]
   names(Retuits) <- c("Date","Source","Target", "text", fields)
