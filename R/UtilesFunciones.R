@@ -693,14 +693,15 @@ d_cotext <-function(data, text="text", sep=" ", min=1, date="date",
   incidences <- dichotomize(data, text, sep=sep, add=F, min=min, nas="None")
   graph <- allNet(incidences, procedures=procedures, criteria=criteria, minimum=minimum, minL=minL, maxL=maxL, support=support,
                   community=community, color=color)
-  names(graph$nodes) <- c("name", paste0("Accum-", names(graph$nodes[2])),community)
+  tnodes <- graph$nodes
+  names(tnodes) <- c("name", paste0("Accum-", names(graph$nodes[2])),community)
 
   #T5 <- Sys.time() #E ----
   
   if (is.null(beginDate) || beginDate > max(data[[date]])) beginDate <- min(data[[date]])
   if (is.null(endDate)   || endDate   < min(data[[date]]))   endDate <- max(data[[date]])
   
-  serie <- seq(as.POSIXct(beginDate)+ interval,as.POSIXct(endDate), interval)
+  serie <- c(seq(as.POSIXct(beginDate)+ interval,as.POSIXct(endDate), interval), as.POSIXct(endDate))
   
   ncoin <- zoom <- main <- list()
   nFrames <- ifelse(nFrames==Inf,length(serie),nFrames)
@@ -722,10 +723,12 @@ d_cotext <-function(data, text="text", sep=" ", min=1, date="date",
     incs  <- incidences[data[[date]] <= serie[i],]
     
     
-
+    if(count<length(serie)){
     ncoin[[i]] <- allNet(incs, procedures=procedures, criteria=criteria, minimum=minimum, minL=minL, maxL=maxL, support=support,
                          community=community, color=color)
-    ncoin[[i]]$nodes <- merge(ncoin[[i]]$nodes, graph$nodes)
+    }
+    else ncoin[[i]] <- graph
+    ncoin[[i]]$nodes <- merge(ncoin[[i]]$nodes, tnodes)
     arguments$nodes <- ncoin[[i]]
     ncoin[[i]] <- do.call(netCoin, arguments)
   }
@@ -733,8 +736,6 @@ d_cotext <-function(data, text="text", sep=" ", min=1, date="date",
   ncoin[["mode"]] <- "frame"
   if(exists("directory")) ncoin[["dir"]] <- directory
   
-  #T6 <- Sys.time() #F ----
-  do.call(multigraphCreate, ncoin)
   #T7 <- Sys.time() #G ----
   
   # lista <- list("Set-up"= T2-T1, "Sample"= T3-T2, "Red"= T4-T3, 
