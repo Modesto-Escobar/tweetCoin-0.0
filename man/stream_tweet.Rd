@@ -11,7 +11,8 @@ Download public live stream Twitter data in real-time according to the selected 
 stream_tweet(search, timeout = 120,
                 parse = TRUE, token = NULL,
                 output_file_name = search, 
-                verbose = TRUE, dir = NULL)
+                verbose = TRUE, dir = NULL,
+                format = c("binary","delimited"))
 }
 \arguments{
   \item{search}{Query to be searched, used to filter and select tweets to return from Twitter's REST API. See details.}
@@ -20,7 +21,9 @@ stream_tweet(search, timeout = 120,
   \item{token}{File containing our Twitter tokens (Check \code{\link[rtweet]{search_tweets}} for more info).}
   \item{output_file_name}{Name of the output writting file (Default = "stream").}
   \item{verbose}{Check whether or not to include output processing/retrieval messages (Default = TRUE).}
-  \item{dir}{Name of directory in which json files should be written. The default = NULL will create a timestamped "stream" folder in the current working directory.}}
+  \item{dir}{Name of directory in which json files should be written. The default = NULL will create a timestamped "stream" folder in the current working directory.}
+  \item{format}{Format of the output file, "binary" for binary format (.dat), "delimited" for delimited text file (.csv).}
+  }
 \details{
 This function allows you to stream public tweets from the Twitter platform in real-time, so you can see and download those that fit your search terms.
 
@@ -45,42 +48,41 @@ Jose L.A. Berrocal,  University of Salamanca. See \url{http://berrocal.usal.es/}
 \examples{
 ## Not run:
 ## Export twitter credentials:
-
 # token<- credentials("credentials.txt")
 
 ## Example extracting a random sample of tweets for 30 seconds:
-
 # stream_tweet(search = "", timeout = 30,
-#                output_file_name = "sample")
+#               output_file_name = "sample", format= "delimited")
                 
 ## Export data using load_tweets() function:             
-# sample <- load_tweets("sample", "streaming")                
+# sample <- load_tweets("sample", "stream", "delimited")                
                 
 
 ## Example streaming tweets using the hashtag #datascience as keyword for 90 seconds:
 # stream_tweet("datascience", timeout = 90,
-#               output_file_name = "datascience")
+#              output_file_name = "datascience", format= "delimited")
                 
-## Export the data frame and plot tweet frequency (if needed): 
+## Export the data frame and plot netCoin graph of mentions and hashtags (if needed): 
 # datascience <- load_tweets(name = "datascience", 
-#                      type = "streaming")
-#ts_plot(datascience, "secs")
+                      type = "stream", format= "delimited")
+# plot(cotweet(datascience))
 
-## Example streaming tweets by user (@BBCWorld) for 10 minutes: 
+## Example streaming tweets by user (@BBCWorld) for 5 minutes: 
 ## (Warning! It's possible that they don't tweet anything during that time!)
 
+# token<- credentials("credentials.txt")
 # userid<-lookup_users("BBCWorld", parse = TRUE, token = token)$user_id
-# stream_tweet(userid, timeout = 600,
-#               output_file_name = "BBCWorld")
+
+# stream_tweet(userid, timeout = 60*5, output_file_name= "BBCWorld", format= "binary")
 
 ## Export data:
-# BBCWorld <- load_tweets("BBCWorld", "streaming")
+# BBCWorld <- load_tweets("BBCWorld", "stream", format= "binary")
 
 ## Example streaming by geo coordinates for 60 seconds:
-# stream_tweet(search = c(-125, 26, -65, 49), timeout = 60, output_file_name = "geotweets")
+# stream_tweet(search = c(-125, 26, -65, 49), timeout = 60, output_file_name = "geotweets", format= "delimited")
 
 ## Export data:
 
-# geotweets<- load_tweets("geotweets", "streaming")
+# geotweets<- load_tweets("geotweets", "stream", format= "delimited")
 ## End (Not run)
 }

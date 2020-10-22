@@ -10,7 +10,7 @@ load_tweets(name, type = c("user","search","stream"), format = c("binary","delim
 \arguments{
   \item{name}{Name of CSV file containing the data.}
   \item{type}{Type of data to be readed. Default = "user" (for a user profile), other options are "stream" (for streaming tweets) and search (for queries and/or hashtags). See details.}
-  \item{format}{It could be "binary"" or "delimited" (plain text).}
+  \item{format}{Format of the file, "binary" for binary format (.dat), "delimited" for delimited text file (.csv).}
 }
 \details{
 Use type = "timeline" when using \code{\link[tweetCoin]{user_tweet}} function (tweets and information from concrete users), type = "streaming" when using \code{\link[tweetCoin]{search_tweet}} function (tweets containing a specific word or set of words) and use "search" when using \code{\link[tweetCoin]{stream_tweet}} function (for a live stream recollection of Twitter data). See examples.
@@ -27,24 +27,20 @@ Jose L.A. Berrocal,  University of Salamanca. See \url{http://berrocal.usal.es/}
 
 # credentials()
 
-## When using "extraction_tweets" function:
+## When using "user_tweet" function:
+# user_tweet("github", maxtweets=100, format="binary")
+# github <- load_tweets("github", type = "user", format="binary")
 
-# user_tweet("github")
-# github <- load_tweets("github", type = "timeline")
-
-## When using "buscar_tweets":
-
+## When using "search_tweets":
 # search_tweet("data science", maxtweets = 300, 
-#              type = "recent")
+              type = "recent", format= "delimited")
 # datascience <- load_tweets(name= "data science", 
-#             type = "search")
+             type = "search", format= "delimited")
 
-## When using "streaming_tweets":
-
-# stream_tweet("#DEVCommunity", timeout = 120,
-#               output_file_name = "stream")
-# DEVCommunity <- load_tweets(name = "stream", 
-#                 type = "stream")
+## When using "stream_tweet":
+# stream_tweet(search = "", timeout = 30,
+               output_file_name = "sample", format= "delimited")
+# sample <- load_tweets("sample", "stream", "delimited")                
                         
 ## End(Not run)                      
 }
