@@ -6,11 +6,11 @@ This function produces a dynamic and interactive netCoin network from a data fra
 }
 \usage{
 d_mention(Tuits, author = "author", text = "text", 
-          date = "date", fields = c("followers", 
-          "following", "stauses", "location"),
+          date = "date", imagedir= NULL, ext="png",
+          fields = c("followers", "following", "stauses", "location"), 
           beginDate = NULL, endDate= NULL, 
           interval= 3600, tzone = "Europe/Paris", 
-          nFrames = Inf, seed=1, 
+          limits=NULL, nFrames = Inf, seed=1, 
           n= min(5000,nrow(Tuits)/2), minlabel = 5, ...)
 }
 \arguments{
@@ -18,12 +18,15 @@ d_mention(Tuits, author = "author", text = "text",
   \item{author}{Variable containing the profiles (users' names).}
   \item{text}{Variable from data containing the messages (tweets).}
   \item{date}{Variable from data containing the date when the message was written.}
+  \item{imagedir}{Directory name where images (if there are) are located.}
+  \item{ext}{Image files extension (.png by default).}
   \item{fields}{Vector containing "followers" (number of people who follows a user), "following" (people followed by user), "stauses" (number of tweets written) and "location" (from where is the user).}
   \item{beginDate}{Date of first available message.}
   \item{endDate}{Date of last available message.}
-  \item{interval}{The end-points of the interval.}
+  \item{interval}{The lenght of the time intervals (default = 3600 seconds).}
   \item{tzone}{Time zone (i.e. "Europe/Paris").}
-  \item{nFrames}{The number of frames to render (default = 3600).}
+  \item{limits}{Date vector with the cutpoints for dynamic graphs.}
+  \item{nFrames}{The number of frames to render.}
   \item{seed}{A single value, interpreted as an integer, or NULL.}
   \item{n}{Sample the network if the number of nodes is greater than 5000 or n.}
   \item{minlabel}{Avoid label of nodes with a frequency less than #minlabel.}

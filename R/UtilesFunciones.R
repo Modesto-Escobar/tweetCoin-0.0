@@ -342,9 +342,9 @@ type <- function(Profiles, followers="followers", following="following",
   return(Profiles)
 }
 
-d_mention <-function(Tuits, author="author", text="text", date="date",
+d_mention <-function(Tuits, author="author", text="text", date="date", imagedir="NULL", ext="png",
                      fields=c("followers", "following", "stauses", "location"),
-                     beginDate = NULL, endDate= NULL, interval= 3600, tzone = "Europe/Paris",
+                     beginDate = NULL, endDate= NULL, interval= 3600, tzone = "Europe/Paris", limits=NULL,
                      nFrames = Inf, seed=1, n = min(5000,nrow(Tuits)/2), minlabel=5, ...) {
   
   arguments <- list(...)
@@ -402,14 +402,14 @@ d_mention <-function(Tuits, author="author", text="text", date="date",
   Authors$Walktrap =ifelse(Authors$Walktrap %in% highGroups,Authors$Walktrap,"Rest")
   
   
-  tuits <- Tuits[,c("author", fields)]
+  tuits <- Tuits[,c("author", fields), drop=FALSE]
   AuthorsT <- aggregate(list(tuits[,fields]), by = list(tuits$author), max)
   names(AuthorsT)[1]<-"name"
-  AuthorsT$link <- linkTwitter(AuthorsT$name)
+
   AuthorsT <- merge(AuthorsT, Authors, by="name", all.x=TRUE)
-  AuthorsT <- AuthorsT[, c("name","link", fields)]
+  AuthorsT <- AuthorsT[, c("name", fields), drop=FALSE]
   
-  
+
   Authors$Degree   <- strength(Graph)
   Authors$label    <- ifelse(Authors$Degree>minlabel, as.character(Authors$name), "")
   Authors$size     <- ifelse(Authors$Degree>2, Authors$Degree, 0)
@@ -421,15 +421,22 @@ d_mention <-function(Tuits, author="author", text="text", date="date",
   else Authors$Tweets <- 0
   Authors <- merge(Authors, T.out, by="name", all.x=TRUE)
   Authors <- merge(Authors, T.in ,  by="name", all.x=TRUE)
+  Authors$link <- linkTwitter(Authors$name)
+  arguments$image <- NULL
+  if(!is.null(imagedir)) {
+    Authors$image <- paste0(imagedir,"/",sub("@","",Authors$name),".",ext)
+    arguments$image <- "image"
+  }
   Authors <- Authors[, c("name", "link", "Tweets", "Mentions", "Mentioned", "Degree", 
-                         fields, "Walktrap", "label", "size")]
+                         fields, arguments$image, "Walktrap", "label", "size")]
   
   #T5 <- Sys.time() #E ----
   
   if (is.null(beginDate) || beginDate > max(Messages$date)) beginDate <- min(Messages$date)
   if (is.null(endDate)   || endDate   < min(Messages$date))   endDate <- max(Messages$date)
   
-  serie <- seq(as.POSIXct(beginDate)+ interval,as.POSIXct(endDate), interval)
+  if(!is.null(limits)) serie <- c(limits[limits > beginDate & limits <= endDate], as.POSIXct(endDate))
+  else serie <- c(seq(as.POSIXct(beginDate)+ interval,as.POSIXct(endDate), interval), as.POSIXct(endDate))
   
   ncoin <- zoom <- main <- list()
   nFrames <- ifelse(nFrames==Inf,length(serie),nFrames)
@@ -478,7 +485,7 @@ d_mention <-function(Tuits, author="author", text="text", date="date",
     nodes$mentioned    <- ifelse(is.na(nodes$mentioned), 0, nodes$mentioned)
     nodes <- nodes[,c("name","link", "tweets", "mentions", "mentioned",
                       "Tweets", "Mentions","Mentioned", "Degree", 
-                      fields,
+                      fields, arguments$image,
                       "Walktrap", "walktrap", "size", "label")]
     
     ncoin[[i]]$nodes <- merge(ncoin[[i]]$nodes, nodes, by="name")
@@ -500,7 +507,7 @@ d_mention <-function(Tuits, author="author", text="text", date="date",
 
 d_cotweet <-function(Tuits, author="author", text="text", date="date",
                     fields=c("followers", "following", "stauses", "location"), searchers="@#",
-                    beginDate = NULL, endDate= NULL, interval= 3600, tzone = "Europe/Paris",
+                    beginDate = NULL, endDate= NULL, interval= 3600, tzone = "Europe/Paris", limits=NULL,
                     nFrames = Inf, seed=1, n = min(5000,nrow(Tuits)/2), minlabel=5, ...) {
   
   arguments <- list(...)
@@ -558,7 +565,7 @@ d_cotweet <-function(Tuits, author="author", text="text", date="date",
   Authors$Walktrap =ifelse(Authors$Walktrap %in% highGroups,Authors$Walktrap,"Rest")
   
   
-  tuits <- Tuits[,c("author", fields)]
+  tuits <- Tuits[,c("author", fields), drop=FALSE]
   AuthorsT <- aggregate(list(tuits[,fields]), by = list(tuits$author), max)
   names(AuthorsT)[1]<-"name"
   AuthorsT <- merge(AuthorsT, Authors[,-2, drop=FALSE], by="name", all.x=TRUE)
@@ -585,7 +592,8 @@ d_cotweet <-function(Tuits, author="author", text="text", date="date",
   if (is.null(beginDate) || beginDate > max(Messages$date)) beginDate <- min(Messages$date)
   if (is.null(endDate)   || endDate   < min(Messages$date))   endDate <- max(Messages$date)
   
-  serie <- seq(as.POSIXct(beginDate)+ interval,as.POSIXct(endDate), interval)
+  if(!is.null(limits)) serie <- c(limits[limits > beginDate & limits <= endDate], as.POSIXct(endDate))
+  else serie <- c(seq(as.POSIXct(beginDate)+ interval,as.POSIXct(endDate), interval), as.POSIXct(endDate))
   
   ncoin <- zoom <- main <- list()
   nFrames <- ifelse(nFrames==Inf,length(serie),nFrames)
@@ -616,11 +624,16 @@ d_cotweet <-function(Tuits, author="author", text="text", date="date",
     }
     names(tt) <- c("name","tweets")
     
-    ncoin[[i]] <- cotweet(Tuits[Tuits[[date]]<=serie[i],c(author, text)], searchers=searchers)
-    # t.out <- as.data.frame(xtabs(X~Source, ncoin[[i]]$links)); names(t.out) <-c("name", "mentions")
-    # t.in  <- as.data.frame(xtabs(X~Target,data=ncoin[[i]]$links)); names(t.in)  <-c("name", "mentioned")
-    
-    graph <- toIgraph(ncoin[[i]])
+    if(count < length(serie)) {
+      ncoin[[i]] <- cotweet(Tuits[Tuits[[date]]<=serie[i],c(author, text)], searchers=searchers)
+      # t.out <- as.data.frame(xtabs(X~Source, ncoin[[i]]$links)); names(t.out) <-c("name", "mentions")
+      # t.in  <- as.data.frame(xtabs(X~Target,data=ncoin[[i]]$links)); names(t.in)  <-c("name", "mentioned")
+      graph <- toIgraph(ncoin[[i]])
+    }
+    else {
+      ncoin[[i]] <- netCoTweet
+      graph=Graph
+    }
     
     community <- membership(cluster_walktrap(graph))
     nodes <- data.frame(name=attr(community,"name"), walktrap=as.vector(community), stringsAsFactors = FALSE)
@@ -653,7 +666,7 @@ d_cotweet <-function(Tuits, author="author", text="text", date="date",
 }
 
 d_cotext <-function(data, text="text", sep=" ", min=1, date="date",
-                     beginDate = NULL, endDate= NULL, interval= 3600, tzone = "Europe/Paris",
+                     beginDate = NULL, endDate= NULL, interval= 3600, tzone = "Europe/Paris", limits=NULL,
                      nFrames = Inf, seed=1, n = min(5000,nrow(Tuits)/2), minlabel=5, ...) {
   
   arguments <- list(...)
@@ -707,7 +720,8 @@ d_cotext <-function(data, text="text", sep=" ", min=1, date="date",
   if (is.null(beginDate) || beginDate > max(data[[date]])) beginDate <- min(data[[date]])
   if (is.null(endDate)   || endDate   < min(data[[date]]))   endDate <- max(data[[date]])
   
-  serie <- c(seq(as.POSIXct(beginDate)+ interval,as.POSIXct(endDate), interval), as.POSIXct(endDate))
+  if(!is.null(limits)) serie <- c(limits[limits > beginDate & limits <= endDate], endDate)
+  else serie <- c(seq(as.POSIXct(beginDate)+ interval,as.POSIXct(endDate), interval), as.POSIXct(endDate))
   
   ncoin <- zoom <- main <- list()
   nFrames <- ifelse(nFrames==Inf,length(serie),nFrames)
@@ -738,6 +752,7 @@ d_cotext <-function(data, text="text", sep=" ", min=1, date="date",
     }
     else {
       ncoin[[i]] <- graph
+      ncoin[[i]]$options$main <- paste0(title, " ", as.character(serie[i], format="%d/%m/%Y, %H:%M")) 
       ncoin[[i]]$nodes <- merge(ncoin[[i]]$nodes, tnodes)
       names(ncoin[[i]]$nodes) <- names(ncoin[[1]]$nodes)
     }

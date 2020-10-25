@@ -10,7 +10,7 @@ d_cotweet(Tuits, author="author", text="text",
           fields=c("followers", "following", "stauses", "location"),
           searchers="@#", beginDate = NULL,
           endDate= NULL, interval= 3600, 
-          tzone = "Europe/Paris", nFrames = Inf,
+          tzone = "Europe/Paris", limits=NULL, nFrames = Inf,
           seed=1, n = min(5000,nrow(Tuits)/2), 
           minlabel=5, ...)
 }
@@ -25,6 +25,7 @@ d_cotweet(Tuits, author="author", text="text",
   \item{endDate}{Date of last available message.}
   \item{interval}{The end-points of the interval (default = 3600).}
   \item{tzone}{Time zone (i.e. "Europe/Paris").}
+  \item{limits}{Date vector with the cutpoints for dynamic graphs.}  
   \item{nFrames}{The number of frames to render (default = Inf).}
   \item{seed}{A single value, interpreted as an integer, or NULL.}
   \item{n}{Sample the network if the number of nodes is greater than 5000 or n.}
