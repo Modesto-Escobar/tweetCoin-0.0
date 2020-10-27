@@ -7,7 +7,7 @@ This function produces a dynamic and interactive netCoin network that allows to 
 \usage{
 d_retweet(Tuits, author="author", text="text", 
         date="date", fields=c("followers", 
-        "following", "stauses", "location"),
+        "following", "statuses", "location"),
         beginDate = NULL, endDate= NULL, 
         interval= 3600, tzone = "Europe/Paris",
         nFrames = Inf, seed=1, n = min(5000, 
@@ -18,7 +18,7 @@ d_retweet(Tuits, author="author", text="text",
   \item{author}{Variable containing the profiles (users' names).}
   \item{text}{Name of the variable with the text or message.}
   \item{date}{Variable containing the date when the message was send.}
-  \item{fields}{Vector containing "followers" (number of people who follows a user), "following" (people followed by user), "stauses" (number of tweets written) and "location" (from where is the user).}
+  \item{fields}{Vector containing "followers" (number of people who follows a user), "following" (people followed by user), "statuses" (number of tweets written) and "location" (from where is the user).}
   \item{beginDate}{Date of first available message.}
   \item{endDate}{Date of last available message.}
   \item{interval}{The end-points of the interval.}

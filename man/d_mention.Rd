@@ -7,7 +7,7 @@ This function produces a dynamic and interactive netCoin network from a data fra
 \usage{
 d_mention(Tuits, author = "author", text = "text", 
           date = "date", imagedir= NULL, ext="png",
-          fields = c("followers", "following", "stauses", "location"), 
+          fields = c("followers", "following", "statuses", "location"), 
           beginDate = NULL, endDate= NULL, 
           interval= 3600, tzone = "Europe/Paris", 
           limits=NULL, nFrames = Inf, seed=1, 
@@ -20,7 +20,7 @@ d_mention(Tuits, author = "author", text = "text",
   \item{date}{Variable from data containing the date when the message was written.}
   \item{imagedir}{Directory name where images (if there are) are located.}
   \item{ext}{Image files extension (.png by default).}
-  \item{fields}{Vector containing "followers" (number of people who follows a user), "following" (people followed by user), "stauses" (number of tweets written) and "location" (from where is the user).}
+  \item{fields}{Vector containing "followers" (number of people who follows a user), "following" (people followed by user), "statuses" (number of tweets written) and "location" (from where is the user).}
   \item{beginDate}{Date of first available message.}
   \item{endDate}{Date of last available message.}
   \item{interval}{The lenght of the time intervals (default = 3600 seconds).}

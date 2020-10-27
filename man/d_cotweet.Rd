@@ -7,7 +7,7 @@ This function produces a dynamic and interactive netCoin network from a data fra
 \usage{
 d_cotweet(Tuits, author="author", text="text", 
           date="date", 
-          fields=c("followers", "following", "stauses", "location"),
+          fields=c("followers", "following", "statuses", "location"),
           searchers="@#", beginDate = NULL,
           endDate= NULL, interval= 3600, 
           tzone = "Europe/Paris", limits=NULL, nFrames = Inf,
@@ -19,7 +19,7 @@ d_cotweet(Tuits, author="author", text="text",
   \item{author}{Variable containing the profiles (users' names).}
   \item{text}{Variable from data containing the messages (tweets).}
   \item{date}{Variable from data containing the date when the message was written.}
-  \item{fields}{Vector containing "followers" (number of people who follows a user), "following" (people followed by user), "stauses" (number of tweets written) and "location" (from where is the user).}
+  \item{fields}{Vector containing "followers" (number of people who follows a user), "following" (people followed by user), "statuses" (number of tweets written) and "location" (from where is the user).}
   \item{searchers}{Selected symbols to use as match key}
   \item{beginDate}{Date of first available message.}
   \item{endDate}{Date of last available message.}

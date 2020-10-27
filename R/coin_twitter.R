@@ -162,8 +162,8 @@ follow_tweet <- function(user, page = "-1", retryonratelimit = TRUE, parse = TRU
 prepare <- function(data=data, info=c("fields", "cotweets", "inform"), original= TRUE, quote=FALSE, retweet=FALSE) {
   if ("fields" %in% info) fields <- c("screen_name","text","created_at","is_quote", "is_retweet") else fields <- NULL
   if ("cotweets" %in% info) cotweets <- c("quoted_screen_name", "retweet_screen_name") else cotweets <- NULL
-  if ("inform" %in% info) inform <- c("followers_count", "friends_count", "statuses_count") else inform <- NULL
-  Inform <- c("followers", "following", "stauses")
+  if ("inform" %in% info) inform <- c("followers_count", "friends_count", "statuses_count", "location") else inform <- NULL
+  Inform <- c("followers", "following", "statuses", "location")
   data$intro <- ifelse(data$is_quote==FALSE & data$is_retweet==FALSE & original==TRUE, TRUE, FALSE)
   data$intro <- ifelse((data$is_quote==quote & quote==TRUE) | (data$is_retweet==retweet & retweet==TRUE), TRUE, data$intro)
   newdata <- data[data$intro, c(fields, cotweets, inform)]
