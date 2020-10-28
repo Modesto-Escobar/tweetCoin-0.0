@@ -14,7 +14,7 @@ d_cotext(data, text="text", sep=" ", min=1, date="date",
 \arguments{
   \item{data}{A data frame with at least one vector of names.}
   \item{text}{Vector name from data containing the messages (tweets).}
-  \item{min}{Minimum number of ocurrences of the text to be include in the graph.}
+  \item{min}{{Minimum number of ocurrences of the text to be include in the graph, default = 1.}
   \item{date}{Vector from data containing the date when the text was written.}
   \item{beginDate}{Date of first available message.}
   \item{endDate}{Date of last available message.}
@@ -40,19 +40,25 @@ This function creates a multigraph object (several graphs through time), which c
 Modesto Escobar, Department of Sociology and Communication, University of Salamanca. See \url{https://sociocav.usal.es/blog/modesto-escobar/}
 }
 \examples{
-## This example uses a sample of original tweets using 
-## the hashtag #cuentalo:
+## Not run: 
 
-data(cuentalo)
-cuentalo$elements <- hashtag_extract(cuentalo$text)
-d_cotext(data=cuentalo, text="elements", sep="|", date= "date")
+## Example using a sample of tweets and retweets with 
+## the hashtag #Shakespeare:
+
+#library(netCoin)
+# data(Shakespeare)
+# Shakespeare$elements <- hashtag_extract(Shakespeare$text)
+
+# plot(d_cotext(data=Shakespeare, text="elements", sep="|", date= "date"))
 
 ## You can include all type of arguments from netCoin 
 ## and/or allNet:
 
-# plot(d_cotext(data = cuentalo, 
-#                text = "elements", sep="|", date = "date",
-#                size = "degree",
-#                zoom = 2, repulsion = 32, 
-#                distance= 18, dir = "~/temp")
+# plot(d_cotext(data = Shakespeare, 
+#              text = "elements", sep="|", date = "date",
+#               size = "degree",
+#               zoom = 2, repulsion = 32, 
+#               distance= 18, dir = "~/temp"))
+
+## End(Not run)
 }
