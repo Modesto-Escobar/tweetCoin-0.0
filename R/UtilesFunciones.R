@@ -343,9 +343,9 @@ type <- function(Profiles, followers="followers", following="following",
 }
 
 d_mention <-function(Tuits, author="author", text="text", date="date", imagedir="NULL", ext="png",
-                     fields=c("followers", "following", "stauses", "location"),
+                     fields=c("followers", "following", "statuses", "location"),
                      beginDate = NULL, endDate= NULL, interval= 3600, tzone = "Europe/Paris", limits=NULL,
-                     nFrames = Inf, seed=1, n = min(5000,nrow(Tuits)/2), minlabel=5, ...) {
+                     nFrames = Inf, seed=1, n = min(5000,nrow(Tuits)), minlabel=5, ...) {
   
   arguments <- list(...)
   
@@ -450,7 +450,7 @@ d_mention <-function(Tuits, author="author", text="text", date="date", imagedir=
   for(i in names(serie)) {
     
     count=count+1; cat('\r', sprintf("%5.1f",(count)/nFrames*100), 
-                       '% |', rep('=', (count) / 4), 
+                       '% |', rep('=', count/nFrames*100), 
                        ifelse(count ==nFrames, '|\n',  '>'), sep = '')
     
     arguments$main <-  paste0(title, " ", as.character(serie[i], format="%d/%m/%Y, %H:%M")) 
@@ -506,9 +506,9 @@ d_mention <-function(Tuits, author="author", text="text", date="date", imagedir=
 }
 
 d_cotweet <-function(Tuits, author="author", text="text", date="date",
-                    fields=c("followers", "following", "stauses", "location"), searchers="@#",
+                    fields=c("followers", "following", "statuses", "location"), searchers="@#",
                     beginDate = NULL, endDate= NULL, interval= 3600, tzone = "Europe/Paris", limits=NULL,
-                    nFrames = Inf, seed=1, n = min(5000,nrow(Tuits)/2), minlabel=5, ...) {
+                    nFrames = Inf, seed=1, n = min(5000,nrow(Tuits)), minlabel=5, ...) {
   
   arguments <- list(...)
   
@@ -607,7 +607,7 @@ d_cotweet <-function(Tuits, author="author", text="text", date="date",
   for(i in names(serie)) {
     
     count=count+1; cat('\r', sprintf("%5.1f",(count)/nFrames*100), 
-                       '% |', rep('=', (count) / 4), 
+                       '% |', rep('=', count/nFrames*100), 
                        ifelse(count ==nFrames, '|\n',  '>'), sep = '')
     
     arguments$main <-  paste0(title, " ", as.character(serie[i], format="%d/%m/%Y, %H:%M")) 
@@ -667,7 +667,7 @@ d_cotweet <-function(Tuits, author="author", text="text", date="date",
 
 d_cotext <-function(data, text="text", sep=" ", min=1, date="date",
                      beginDate = NULL, endDate= NULL, interval= 3600, tzone = "Europe/Paris", limits=NULL,
-                     nFrames = Inf, seed=1, n = min(5000,nrow(Tuits)/2), minlabel=5, ...) {
+                     nFrames = Inf, seed=1, n = min(5000,nrow(Tuits)), minlabel=5, ...) {
   
   arguments <- list(...)
   
@@ -735,7 +735,7 @@ d_cotext <-function(data, text="text", sep=" ", min=1, date="date",
   for(i in names(serie)) {
     
     count=count+1; cat('\r', sprintf("%5.1f",(count)/nFrames*100), 
-                       '% |', rep('=', (count) / 4), 
+                       '% |', rep('=', count/nFrames*100), 
                        ifelse(count ==nFrames, '|\n',  '>'), sep = '')
     
     arguments$main <-  paste0(title, " ", as.character(serie[i], format="%d/%m/%Y, %H:%M")) 
@@ -772,9 +772,9 @@ d_cotext <-function(data, text="text", sep=" ", min=1, date="date",
 
 
 d_retweet <-function(Tuits, author="author", text="text", date="date",
-                   fields=c("followers", "following", "stauses", "location"),
+                   fields=c("followers", "following", "statuses", "location"),
                    beginDate = NULL, endDate= NULL, interval= 3600, tzone = "Europe/Paris",
-                   nFrames = Inf, seed=1, n = min(5000,nrow(Tuits)/2), minlabel=5, ...) {
+                   nFrames = Inf, seed=1, n = min(5000,nrow(Tuits)), minlabel=5, ...) {
   
   arguments <- list(...)
   
@@ -884,7 +884,7 @@ d_retweet <-function(Tuits, author="author", text="text", date="date",
   if (is.null(beginDate) || beginDate > max(SRTuits$Date)) beginDate <- min(SRTuits$Date)
   if (is.null(endDate)   || endDate   < min(SRTuits$Date))   endDate <- max(SRTuits$Date)
   
-  serie <- seq(as.POSIXct(beginDate)+ interval,as.POSIXct(endDate), interval)
+  serie <- c(seq(as.POSIXct(beginDate)+ interval,as.POSIXct(endDate), interval), as.POSIXct(endDate))
   
   ncoin <- zoom <- main <- list()
   nFrames <- ifelse(nFrames==Inf,length(serie),nFrames)
@@ -898,12 +898,12 @@ d_retweet <-function(Tuits, author="author", text="text", date="date",
   for(i in names(serie)) {
     
     count=count+1; cat('\r', sprintf("%5.1f",(count)/nFrames*100), 
-                       '% |', rep('=', (count) / 4), 
+                       '% |', rep('=', count/nFrames*100), 
                        ifelse(count ==nFrames, '|\n',  '>'), sep = '')
     
     arguments$main <-  paste0(title, " ", as.character(serie[i], format="%d/%m/%Y, %H:%M")) 
     arguments$zoom  <- max(.50,arguments$zoom*(.995)^(count-1)) # .10 y .965
-    rets  <- SRTuits[SRTuits$Date <= serie[i],]
+    rets  <- PRetuits[PRetuits$Date <= serie[i],]
     
     
     tt <- # Original number of tweets by authorn
@@ -915,12 +915,14 @@ d_retweet <-function(Tuits, author="author", text="text", date="date",
     }
     names(tt) <- c("name","tweets")
     
-    edges <- # Tweets links
-      aggregate(Date~Source+Target, FUN = length, data=rets)
-    names(edges) <- c("Source","Target","Weight")
+    if(count<length(serie)) {
+      edges <- aggregate(Date~Source+Target, FUN = length, data=rets) # Tweets linksn
+      names(edges) <- c("Source","Target","Weight")
     
-    graph<-graph_from_edgelist(as.matrix(edges[,1:2]),directed=TRUE) # All and every day igraph objects
-    igraph::E(graph)$weight<-edges$Weight
+      graph<-graph_from_edgelist(as.matrix(edges[,1:2]),directed=TRUE) # All and every day igraph objects
+      igraph::E(graph)$weight<-edges$Weight
+    }
+    else graph <- Graph 
     
     community <- membership(cluster_walktrap(graph))
     nodes <- data.frame(name=attr(community,"name"), walktrap=as.vector(community), stringsAsFactors = FALSE)
