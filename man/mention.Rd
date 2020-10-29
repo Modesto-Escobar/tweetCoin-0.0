@@ -25,22 +25,15 @@ This function creates a netCoin object, which can be ploted with the plot() func
 Modesto Escobar, Department of Sociology and Communication, University of Salamanca. See \url{https://sociocav.usal.es/blog/modesto-escobar/}
 }
 \examples{
-## Not run: 
-
 ## This example uses a sample of tweets using 
 ## the hashtag #Shakespeare:
 
-# data(Shakespeare)
-# mention(Shakespeare, "author", "text")
+data(Shakespeare)
+m <- mention(Shakespeare, "author", "text")
 
 ## You can include all type of arguments from netCoin 
 ## and/or allNet And visualize the correspondent graph:
 
-# G <- mention(data = Shakespeare, author = "author", 
-#                  text = "text")
-# plot(netCoin(G, size = "degree", distance = 12.8, 
-            repulsion = 9.08, zoom = .42, main= "Mention graph of #Shakespeare:"), 
-            dir = "~/temp")
-  
-## End(Not run)
+m2<- netCoin(m, size = "degree", distance = 12.8, 
+            repulsion = 9.08, zoom = .42, main= "Mention graph of #Shakespeare")
 }

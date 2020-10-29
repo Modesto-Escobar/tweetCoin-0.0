@@ -32,13 +32,12 @@ This function creates a list containing two elements: 1) a data.frame (nodes) wi
 Modesto Escobar, Department of Sociology and Communication, University of Salamanca. See \url{https://sociocav.usal.es/blog/modesto-escobar/}
 }
 \examples{
-## This example uses a sample of retweets of tweets using 
-## the hashtag "#cuentalo":
+## This example uses a sample tweets using 
+## the hashtag "#Shakespeare":
 
-data(recuenta)
-R <- cotweet(recuenta, "author", "text")
+data(Shakespeare)
+R <- cotweet(Shakespeare, "author", "text")
 S <- calCentr(R, "all")
-
 S$nodes
 S$graph
 

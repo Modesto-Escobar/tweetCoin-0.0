@@ -45,6 +45,7 @@ Jose L.A. Berrocal,  University of Salamanca. See \url{http://berrocal.usal.es/}
 }
 \examples{
 ## Not Run:
+
 ## Example searching for tweets using the hashtag "#Rstudio" and saving in delimited format:
 # search_tweet("#Rstudio", maxtweets = 300, 
 #              type = "recent", include_rts = TRUE,

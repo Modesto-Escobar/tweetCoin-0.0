@@ -5,13 +5,13 @@
 This function produces a dynamic and interactive netCoin network that allows to recreate the timeline of messages and interactions on Twitter.
 }
 \usage{
-d_retweet(Tweets, author="author", text="text", 
-        date="date", fields=c("followers", 
+d_retweet(Tweets, author = "author", text = "text", 
+        date = "date", fields = c("followers", 
         "following", "statuses", "location"),
-        beginDate = NULL, endDate= NULL, 
+        beginDate = NULL, endDate = NULL, 
         interval= 3600, tzone = "Europe/Paris",
         nFrames = Inf, seed=1, n = min(5000, 
-        nrow(Tweets)), minlabel=5, ...)
+        nrow(Tweets)), minlabel = 5, ...)
 }
 \arguments{
   \item{Tweets}{A data frame with at least one vector of names.}
@@ -41,20 +41,14 @@ This set of netCoin objects can be ploted with netCoin's \code{\link[netCoin]{mu
 Modesto Escobar, Department of Sociology and Communication, University of Salamanca. See \url{https://sociocav.usal.es/blog/modesto-escobar/}
 }
 \examples{
-## Not run: 
-
 ## Example using a sample of tweets and retweets with 
 ## the hashtag #Shakespeare:
 
-# data(Shakespeare)
-# g <- d_retweet(Shakespeare)
-# g
-# do.call(multigraphCreate, g$nets) 
+data(Shakespeare)
+g <- d_retweet(Shakespeare)
 
 ## You can use all kind of netCoin arguments:
-# plot(d_retweet(Shakespeare, 
-#      distance= 3, repulsion= 3,
-#      main = "Dynamic  graph of retweets using #Shakespeare") $nets)
 
-## End(Not run)
+g2 <- d_retweet(Shakespeare, distance= 3, repulsion= 3,
+                 main = "Dynamic  graph of retweets using #Shakespeare")
 }

@@ -7,7 +7,7 @@ This function produces an interactive netCoin network from a data frame or matri
 \usage{
 retweet(data, sender = "author", 
             text = "text", 
-            language = "en", nodes=NULL, ...)
+            language = "en", nodes = NULL, ...)
 }
 \arguments{
   \item{data}{A data frame with at least one vector of names.}
@@ -27,24 +27,16 @@ This function creates a netCoin object, which can be ploted with the plot() func
 Modesto Escobar, Department of Sociology and Communication, University of Salamanca. See \url{https://sociocav.usal.es/blog/modesto-escobar/}
 }
 \examples{
-## Not run: 
-
 ## This example uses a sample of tweets using 
 ## the hashtag #Shakespeare:
 
-# data(Shakespeare)
-# retweet( Shakespeare, "author", "text")
-# plot(retweet( Shakespeare, "author", "text"),
-                   dir = "~/temp")
+data(Shakespeare)
+r <- retweet( Shakespeare, "author", "text")
 
 ## You can add all kinds of netCoin and/or 
 ## allNet arguments:
 
-# R <- retweet (Shakespeare, "author", "text")
-# plot(netCoin(R, size = "degree", distance = 15, 
-#              repulsion = 25, zoom = .2, 
-#              main= "Graph of retweets using #Shakespeare:"), 
-#              dir = "~/temp")
-
-## End(Not run)
+r2 <- netCoin(r, size = "degree", distance = 15, 
+               repulsion = 25, zoom = .2, 
+               main= "Graph of retweets using #Shakespeare")
 }

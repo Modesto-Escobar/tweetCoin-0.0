@@ -42,8 +42,8 @@ Jose L.A. Berrocal,  University of Salamanca. See \url{http://berrocal.usal.es/}
 ## Example extracting the tweets from 
 ## twitter account @github:
 
-# credentials("credentials.txt")
-# user_tweet("github")
+credentials()
+user_tweet("github")
 
 ## And now the .csv file can be upload 
 ## to our environment:

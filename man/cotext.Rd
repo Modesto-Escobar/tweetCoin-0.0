@@ -27,28 +27,23 @@ This function creates a netCoin object, which can be ploted with the plot() func
 Modesto Escobar, Department of Sociology and Communication, University of Salamanca. See \url{https://sociocav.usal.es/blog/modesto-escobar/}
 }
 \examples{
-## Not run: 
-
 ## This example uses a sample of original tweets using 
 ## the hashtag #Shakespeare:
 
-# data(Shakespeare)
-# Shakespeare$elements <- hashtag_extract(Shakespeare$text)
-# T <- cotext(data=Shakespeare, text="elements", sep="|")
-# T
-# plot(T, min=5)
+data(Shakespeare)
+Shakespeare$elements <- hashtag_extract(Shakespeare$text)
+t <- cotext(data = Shakespeare, text = "elements", sep="|", min = 15)
 
 ## You can include all type of arguments from netCoin 
 ## and/or allNet:
 
-# plot(T, size = "degree",
-#      zoom = 2, repulsion = 32, 
-#      distance= 18, dir = "~/temp")
+t2 <- netCoin(t, size = "degree",
+      zoom = .9, repulsion = 32, 
+     distance= 18)
 
 ## We extracted the hashtags first using hashtag_extract() function,
 ## but it can also be directly used like this:
 
-# plot(cotext(Shakespeare, text = "text", sep = "#"))
-
-## End(Not run)
+t3 <- cotext(Shakespeare, text = "text", sep = "#", min = 15)
+plot(t3)
 }

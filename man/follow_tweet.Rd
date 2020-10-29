@@ -31,8 +31,6 @@ A .csv file containg a Twitter user's follower IDs (a column named "user_id").
 Jose L.A. Berrocal,  University of Salamanca. See \url{http://berrocal.usal.es/}
 }
 \examples{
-
 ## 
-# a <- follow_tweet("ChelseaParlett")
-
+#a <- follow_tweet("jack")
 }

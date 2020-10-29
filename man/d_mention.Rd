@@ -38,7 +38,7 @@ This function works using netCoin package "dichotomize" function. Is intented to
 Any \code{\link[netCoin]{netCoin}} and/or \code{\link[netCoin]{allNet}} argument can be used in order to specify the network produced. 
 }
 \value{
-This function creates a list containing three objects: "authors" (a data.frame containing names, links, Tweets and Mentions), "messages" (a data.frame containing dates, authors and texts) and "nets", (a set of \code{\link[netCoin]{netCoin}} objects). 
+This function creates a dyntweets object, containing three things: "authors" (a data.frame containing names, links, Tweets and Mentions), "messages" (a data.frame containing dates, authors and texts) and "nets", (a set of \code{\link[netCoin]{netCoin}} objects). 
 
 This set of netCoin objects can be ploted with netCoin's \code{\link[netCoin]{multigraphCreate}} function, creating a folder in the computer with an HTML document named index.html which contains the produced graph(s). This file can be directly opened with your browser and sent to a web server to work properly.
 }
@@ -46,22 +46,17 @@ This set of netCoin objects can be ploted with netCoin's \code{\link[netCoin]{mu
 Modesto Escobar, Department of Sociology and Communication, University of Salamanca. See \url{https://sociocav.usal.es/blog/modesto-escobar/}
 }
 \examples{
-## Not run: 
-
-## This example uses a sample of original tweets using 
+## This example uses a sample of tweets using 
 ## the hashtag #Shakespeare:
 
-# data(Shakespeare)
-# e <- d_mention(Shakespeare, author = "author", text = "text", date = "date")              
-# do.call(multigraphCreate, e$nets)
+data(Shakespeare)
+e<- d_mention(Shakespeare, author = "author", text = "text", date = "date")          
 
 ## You can include all type of arguments from netCoin 
 ## and/or allNet and visualize the correspondent graph:
 
-# plot(d_mention(Tweets = Shakespeare, min=5,
-#    author = "author", text = "text", 
-#    date = "date", zoom = .8, distance = 13, 
-#    repulsion = 7)$nets)
-
-## End(Not run)
+e2 <- d_mention(Tweets = Shakespeare, min=5,
+                author = "author", text = "text", 
+                date = "date", zoom = .8, distance = 13, 
+                repulsion = 7)
 }

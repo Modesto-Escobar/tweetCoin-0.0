@@ -36,24 +36,17 @@ This function creates a netCoin object, which can be ploted with the plot() func
 Modesto Escobar, Department of Sociology and Communication, University of Salamanca. See \url{https://sociocav.usal.es/blog/modesto-escobar/}
 }
 \examples{
-## Not run: 
-
 ## This example uses a sample of tweets using 
 ## the hashtag #Shakespeare:
 
-# data(Shakespeare)
-# cotweet(Shakespeare,"text" )
-# plot(cotweet(Shakespeare,"text"))
+data(Shakespeare)
+c <- cotweet(Shakespeare,"text", min = 5, excludeRT = TRUE)
 
 ## You can include all type of arguments from netCoin 
 ## and/or allNet:
 
-# C <- cotweet(Shakespeare,"text", min=5, excludeRT= TRUE)
-# plot(netCoin(C, size = "degree", distance = 11.18, 
-#            repulsion = 20.8, zoom = .7, 
-#            color = "community", shape = "type",
-#            main= "Graph of authors and hashtags sharing #Shakespeare:"), 
-#            dir = "~/temp")
-
-## End(Not run)
+c2 <- netCoin(c, size = "degree", distance = 11.18, 
+            repulsion = 20.8, zoom = .7, 
+            color = "community", shape = "type",
+            main= "Graph of authors and hashtags sharing #Shakespeare:")
 }

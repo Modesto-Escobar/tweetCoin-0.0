@@ -5,11 +5,10 @@
 This function produces a dynamic and interactive netCoin network from a data frame or matrix with text and dates, conecting their elements differentiated by a separator.
 }
 \usage{
-d_cotext(data, text="text", sep=" ", min=1, date="date", 
-          beginDate = NULL, endDate= NULL, interval= 3600, 
-          tzone = "Europe/Paris", limits=NULL, nFrames = Inf,
-          seed=1, n = min(5000,nrow(Tuits)/2), 
-          minlabel=5, ...)
+d_cotext(data, text = "text", sep =" ", min = 1, date = "date", 
+          beginDate = NULL, endDate = NULL, interval = 3600, 
+          tzone = "Europe/Paris", limits = NULL, nFrames = Inf,
+          seed = 1, n = min(5000,nrow(data)), minlabel = 5, ...)
 }
 \arguments{
   \item{data}{A data frame with at least one vector of names.}
@@ -40,25 +39,19 @@ This function creates a multigraph object (several graphs through time), which c
 Modesto Escobar, Department of Sociology and Communication, University of Salamanca. See \url{https://sociocav.usal.es/blog/modesto-escobar/}
 }
 \examples{
-## Not run: 
-
 ## Example using a sample of tweets and retweets with 
 ## the hashtag #Shakespeare:
 
-# library(netCoin)
-# data(Shakespeare)
-# Shakespeare$elements <- hashtag_extract(Shakespeare$text)
-
-# plot(d_cotext(data=Shakespeare, text="elements", sep="|", date= "date"))
-
+data(Shakespeare)
+search_tweets_Shakespeare$elements <- hashtag_extract(search_tweets_Shakespeare$text)
+n <- d_cotext(data=Shakespeare, text="elements", sep="|", 
+              date= "date", support= 10, interval = 3600 * 24)
+              
 ## You can include all type of arguments from netCoin 
 ## and/or allNet:
 
-# plot(d_cotext(data = Shakespeare, 
-#              text = "elements", sep="|", date = "date",
-#               size = "degree",
-#               zoom = 2, repulsion = 32, 
-#               distance= 18, dir = "~/temp"))
-
-## End(Not run)
+n2 <- d_cotext(data = Shakespeare, 
+               text = "elements", sep="|", date = "date",
+               size = "degree", zoom = 2, repulsion = 32, 
+               distance= 18)
 }

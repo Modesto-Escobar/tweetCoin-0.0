@@ -28,25 +28,27 @@ It returns a vector of errors, if any. All pictures are download into the select
 Modesto Escobar, Department of Sociology and Communication, University of Salamanca. See \url{https://sociocav.usal.es/blog/modesto-escobar/}
 }
 \examples{
+## Not run: 
 
-# In case you want to download a file directly from an URL:
+## In case you want to download a file directly from an URL:
 
-dta <- data.frame(name = "Data", url = "https://sociocav.usal.es/me/Stata/example.dta")
-dta$url <- as.character(paste(dta$url))
-getFiles(dta, path = "./", ext = NULL)
+# dta <- data.frame(name = "Data", url = "https://sociocav.usal.es/me/Stata/example.dta")
+# dta$url <- as.character(paste(dta$url))
+# getFiles(dta, path = "./", ext = NULL)
 
 ##  You can can also combine this function with getWikidata (among others).
 ## In case you want to download a picture of a person:
 
-A <- data.frame(name= getWikidata(c("Rembrandt"))$label, url=getWikidata(c("Rembrandt"))$pics)
-A$url <- as.character( paste (A$url))
-getFiles(A, path = "./", ext = "png")
+# A <- data.frame(name= getWikidata(c("Rembrandt"))$label, url=getWikidata(c("Rembrandt"))$pics)
+# A$url <- as.character( paste (A$url))
+# getFiles(A, path = "./", ext = "png")
 
 ## Or the pics of multiple authors: 
 
-B <- getWikidata( c("Monet", "Renoir", "Caillebotte"))
-data <- data.frame(name = B$label, url = B$pics)
-data$url <- as.character( paste( data$url))
-getFiles(data, path = "./", ext = NULL)
+# B <- getWikidata( c("Monet", "Renoir", "Caillebotte"))
+# data <- data.frame(name = B$label, url = B$pics)
+# data$url <- as.character( paste( data$url))
+# getFiles(data, path = "./", ext = NULL)
 
+## End(Not run)
 }

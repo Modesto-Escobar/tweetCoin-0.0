@@ -10,8 +10,8 @@ d_cotweet(Tweets, author="author", text="text",
           fields=c("followers", "following", "statuses", "location"),
           searchers="@#", beginDate = NULL,
           endDate= NULL, interval= 3600, 
-          tzone = "Europe/Paris", limits=NULL, nFrames = Inf,
-          seed=1, n = min(5000,nrow(Tweets)), 
+          tzone = "Europe/Paris", limits = NULL, nFrames = Inf,
+          seed = 1, n = min(5000,nrow(Tweets)), 
           minlabel=5, ...)
 }
 \arguments{
@@ -47,23 +47,16 @@ This set of netCoin objects can be ploted with netCoin's \code{\link[netCoin]{mu
 Modesto Escobar, Department of Sociology and Communication, University of Salamanca. See \url{https://sociocav.usal.es/blog/modesto-escobar/}
 }
 \examples{
-## Not run: 
-
 ## Example using a sample of tweets and retweets with 
 ## the hashtag #Shakespeare:
 
-# data(Shakespeare)
-# f <- d_cotweet(Tweets=Shakespeare,"author", "text", date= "date")
-# f
-# do.call(multigraphCreate, f$nets)
+data(Shakespeare)
+f <- d_cotweet(Shakespeare,"author", "text", date= "date")
 
 ## You can include all type of arguments from netCoin 
 ## and/or allNet:
 
-# f2 <- d_cotweet(Shakespeare,"author", "text", date= "date",
-#     size = "degree", zoom = .8, repulsion = 32,  distance= 18, interval = 3600*24,
-#     main= "Dynamic netCoin graph of tweets using #Shakespeare")
-# do.call(multigraphCreate, f2$nets)
-
-## End(Not run)
+f2 <- d_cotweet(Shakespeare,"author", "text", date= "date",
+     size = "degree", zoom = .8, repulsion = 32,  distance= 18, interval = 3600*24,
+     main= "Dynamic netCoin graph of tweets using #Shakespeare")
 }
