@@ -390,7 +390,7 @@ d_mention <-function(Tweets, author="author", text="text", date="date", imagedir
     Tweets [Tweets$target=="" & Tweets$author!="",]
   Messages <- Messages[order(Messages$date),]
   if("location" %in% fields) Messages$location <- substr(Messages$location,1,50)
-  Messages <- Messages[!is.na(date), c("date", "author", "text")]
+  Messages <- Messages[!is.na(date), c("date", "author", "text", fields)]
   
   
   netMentions <- mention(Messages)
@@ -553,7 +553,7 @@ d_cotweet <-function(Tweets, author="author", text="text", date="date",
     Tweets [Tweets$target=="" & Tweets$author!="",]
   Messages <- Messages[order(Messages$date),]
   if("location" %in% fields) Messages$location <- substr(Messages$location,1,50)
-  Messages <- Messages[!is.na(date), c("date", "author", "text")]
+  Messages <- Messages[!is.na(date), c("date", "author", "text", fields)]
   
   
   netCoTweet <- cotweet(Messages, searchers=searchers)
@@ -818,7 +818,7 @@ d_retweet <-function(Tweets, author="author", text="text", date="date",
     Tweets [Tweets$target=="" & Tweets$author!="",]
   Messages <- Messages[order(Messages$date),]
   if("location" %in% fields) Messages$location <- substr(Messages$location,1,50)
-  Messages <- Messages[!is.na(date), c("date", "author", "text")]
+  Messages <- Messages[!is.na(date), c("date", "author", "text", fields)]
   
   
   Retweets  <- toRetweets(Tweets, fields=fields)
@@ -963,9 +963,16 @@ d_retweet <-function(Tweets, author="author", text="text", date="date",
   return(all)
 }
 
-plot.multigraph <- function(multigraph) {
+plot.multigraph <- function(multigraph, dir=NULL) {
+  if(!is.null(dir)) multigraph$dir <- dir
   do.call(multigraphCreate, multigraph)
 }
+
+plot.dyntweets <- function(dyntweets, dir=NULL) {
+  if(!is.null(dir)) dyntweets$nets$dir <- dir
+  do.call(multigraphCreate, dyntweets$nets)
+}
+
 toRetweets <- function(tweets, author="author", target="target", date="date", text="text", fields=NULL) {
   Retweets <- tweets[tweets[[target]]!="" & tweets[[author]]!="" & !is.na(tweets[[date]]),c(date,author, target, text, fields),]
   names(Retweets) <- c("Date","Source","Target", "text", fields)
