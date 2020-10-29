@@ -5,17 +5,17 @@
 This function produces a dynamic and interactive netCoin network from a data frame or matrix of tweets (original messages) coincidendes, conecting mentions and hashtags.
 }
 \usage{
-d_cotweet(Tuits, author="author", text="text", 
+d_cotweet(Tweets, author="author", text="text", 
           date="date", 
           fields=c("followers", "following", "statuses", "location"),
           searchers="@#", beginDate = NULL,
           endDate= NULL, interval= 3600, 
           tzone = "Europe/Paris", limits=NULL, nFrames = Inf,
-          seed=1, n = min(5000,nrow(Tuits)/2), 
+          seed=1, n = min(5000,nrow(Tweets)), 
           minlabel=5, ...)
 }
 \arguments{
-  \item{Tuits}{A data frame with at least one vector of names.}
+  \item{Tweets}{A data frame with at least one vector of names.}
   \item{author}{Vector name from data containing the profiles (users' names).}
   \item{text}{Vector name from data containing the messages (tweets).}
   \item{date}{Vector name from data containing the date when the messages were written.}
@@ -53,7 +53,7 @@ Modesto Escobar, Department of Sociology and Communication, University of Salama
 ## the hashtag #Shakespeare:
 
 # data(Shakespeare)
-# f <- d_cotweet(Tuits=Shakespeare,"author", "text", date= "date")
+# f <- d_cotweet(Tweets=Shakespeare,"author", "text", date= "date")
 # f
 # do.call(multigraphCreate, f$nets)
 

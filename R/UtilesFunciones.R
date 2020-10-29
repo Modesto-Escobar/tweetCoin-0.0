@@ -221,22 +221,28 @@ hashtag_extract<- function(texto,characters="#@", excludeRT=TRUE, oldText=NULL, 
 
 
 mention <- function(data, author="author", text="text", ...) {
-  arguments <- list(...)
   q <- sapply(hashtag_extract(data[[text]],"@"),strsplit,"\\|")
   n.obs <- sapply(q, length)
   seq.max <- seq_len(max(n.obs))
   mat <- as.data.frame(t(sapply(q, "[", i = seq.max)))
   rownames(mat) <- c()
   data[[author]] <- tolower(iconv(data[[author]],to="ASCII//TRANSLIT"))
+  data$author <- ifelse(substr(data$author,1,1)=="@", data$author, paste0("@", data$author))
+  authors <- as.data.frame(table(data$author)); names(authors) <- c("name", "tweets")
   newData <- cbind(data[,author], mat)
   links <- edgeList(newData, procedures = "shape")
-  links$Source <- sub("^@","",links$Source)
   links$X <- 1
   Links <- aggregate( X~Source+Target, data=links, FUN=length)
   arguments <- list(links=Links, lwidth="X", ...)
+  if(!exists("showArrows", arguments)) arguments$showArrows <- TRUE
+  if(!exists("size", arguments)) arguments$size <- "tweets"
+  if(!exists("labelSize", arguments)) arguments$labelSize <- "degree"
   net <- do.call(netCoin, arguments)
+  net$nodes$link <- linkTwitter(net$nodes$name)
+  net$nodes <- merge(net$nodes, authors, all.x=TRUE)
+  net$nodes$tweets <- ifelse(is.na(net$nodes$tweets), 0, net$nodes$tweets)
   if(exists("language",arguments) && arguments$language=="es") type = "tipo" else type = "type"
-  net$nodes[[type]] <-ifelse(grepl("^@",net$nodes[[net$options$nodeName]]), "mentioned", "author")
+  net$nodes[[type]] <-ifelse(net$nodes$tweets==0, "only mentioned", "author")
   net <- netCoin(net, color=type, shape=type)
   return(net)
 }
@@ -342,10 +348,10 @@ type <- function(Profiles, followers="followers", following="following",
   return(Profiles)
 }
 
-d_mention <-function(Tuits, author="author", text="text", date="date", imagedir="NULL", ext="png",
+d_mention <-function(Tweets, author="author", text="text", date="date", imagedir=NULL, ext="png",
                      fields=c("followers", "following", "statuses", "location"),
                      beginDate = NULL, endDate= NULL, interval= 3600, tzone = "Europe/Paris", limits=NULL,
-                     nFrames = Inf, seed=1, n = min(5000,nrow(Tuits)), minlabel=5, ...) {
+                     nFrames = Inf, seed=1, n = min(5000,nrow(Tweets)), minlabel=5, ...) {
   
   arguments <- list(...)
   
@@ -363,24 +369,24 @@ d_mention <-function(Tuits, author="author", text="text", date="date", imagedir=
     directory <- arguments$dir 
     arguments$dir <- NULL
   }
-  if("location" %in% fields) Tuits$location <- substr(Tuits$location,1,50)
+  if("location" %in% fields) Tweets$location <- substr(Tweets$location,1,50)
   
   title <- arguments$main
   
   # T1 <- Sys.time() #A ----
   
-  Tuits$target<-ifelse(grepl("^RT @",Tuits[[text]]),sub(".*(@.*?):[ ].*","\\1",Tuits[[text]]),"")
-  Tuits$author <- tolower(iconv(Tuits[[author]],to="ASCII//TRANSLIT"))
+  Tweets$target<-ifelse(grepl("^RT @",Tweets[[text]]),sub(".*(@.*?):[ ].*","\\1",Tweets[[text]]),"")
+  Tweets$author <- tolower(iconv(Tweets[[author]],to="ASCII//TRANSLIT"))
   
-  attributes(Tuits[[date]])$tzone <-tzone
+  attributes(Tweets[[date]])$tzone <-tzone
   
-  if (all(grepl("^$",Tuits$target))) {
-    TT <- aggregate(target~author, FUN = length, data=Tuits[Tuits$target=="",])
+  if (all(grepl("^$",Tweets$target))) {
+    TT <- aggregate(target~author, FUN = length, data=Tweets[Tweets$target=="",])
     names(TT) <- c("name","Tweets")
   }
   
   Messages <-
-    Tuits [Tuits$target=="" & Tuits$author!="",]
+    Tweets [Tweets$target=="" & Tweets$author!="",]
   Messages <- Messages[order(Messages$date),]
   if("location" %in% fields) Messages$location <- substr(Messages$location,1,50)
   Messages <- Messages[!is.na(date), c("date", "author", "text")]
@@ -402,8 +408,8 @@ d_mention <-function(Tuits, author="author", text="text", date="date", imagedir=
   Authors$Walktrap =ifelse(Authors$Walktrap %in% highGroups,Authors$Walktrap,"Rest")
   
   
-  tuits <- Tuits[,c("author", fields), drop=FALSE]
-  AuthorsT <- aggregate(list(tuits[,fields]), by = list(tuits$author), max)
+  tweets <- Messages[,c("author", fields), drop=FALSE]
+  AuthorsT <- aggregate(list(tweets[,fields]), by = list(tweets$author), max)
   names(AuthorsT)[1]<-"name"
 
   AuthorsT <- merge(AuthorsT, Authors, by="name", all.x=TRUE)
@@ -459,15 +465,15 @@ d_mention <-function(Tuits, author="author", text="text", date="date", imagedir=
     
     
     tt <- # Original number of tweets by authorn
-      as.data.frame(table(Tuits[Tuits[[date]]<= serie[i] & Tuits$target=="",author]))
+      as.data.frame(table(Messages[Messages[[date]]<= serie[i],author]))
     if(nrow(tt)==0) {
-      tt <- as.data.frame(table(Tuits[Tuits[[date]]<=serie[i],author]))
+      tt <- as.data.frame(table(Messages[Messages[[date]]<=serie[i],author]))
       tt$Freq=0
       
     }
     names(tt) <- c("name","tweets")
     
-    ncoin[[i]] <- mention(Tuits[Tuits[[date]]<=serie[i],c(author, text)])
+    ncoin[[i]] <- mention(Messages[Messages[[date]]<=serie[i],c(author, text)])
     t.out <- as.data.frame(xtabs(X~Source, ncoin[[i]]$links)); names(t.out) <-c("name", "mentions")
     t.in  <- as.data.frame(xtabs(X~Target,data=ncoin[[i]]$links)); names(t.in)  <-c("name", "mentioned")
     
@@ -501,14 +507,14 @@ d_mention <-function(Tuits, author="author", text="text", date="date", imagedir=
   # lista <- list("Set-up"= T2-T1, "Sample"= T3-T2, "Red"= T4-T3, 
   #              "Statistics"= T5-T4, "Loop"= T6-T5, "multigraph"= T7-T6, "Total"= T7-T1) # To check Sys.time() Add list to all <-
   Frames <- structure(ncoin, class="multigraph")
-  all <- list(authors= Authors, messages= Messages, nets = Frames)
+  all <- structure(list(authors= Authors, messages= Messages, nets = Frames), class="dyntweets")
   return(all)
 }
 
-d_cotweet <-function(Tuits, author="author", text="text", date="date",
+d_cotweet <-function(Tweets, author="author", text="text", date="date",
                     fields=c("followers", "following", "statuses", "location"), searchers="@#",
                     beginDate = NULL, endDate= NULL, interval= 3600, tzone = "Europe/Paris", limits=NULL,
-                    nFrames = Inf, seed=1, n = min(5000,nrow(Tuits)), minlabel=5, ...) {
+                    nFrames = Inf, seed=1, n = min(5000,nrow(Tweets)), minlabel=5, ...) {
   
   arguments <- list(...)
   
@@ -526,24 +532,24 @@ d_cotweet <-function(Tuits, author="author", text="text", date="date",
     directory <- arguments$dir 
     arguments$dir <- NULL
   }
-  if("location" %in% fields) Tuits$location <- substr(Tuits$location,1,50)
+  if("location" %in% fields) Tweets$location <- substr(Tweets$location,1,50)
   
   title <- arguments$main
   
   # T1 <- Sys.time() #A ----
   
-  Tuits$target<-ifelse(grepl("^RT @",Tuits[[text]]),sub(".*(@.*?):[ ].*","\\1",Tuits[[text]]),"")
-  Tuits$author <- tolower(iconv(Tuits[[author]],to="ASCII//TRANSLIT"))
+  Tweets$target<-ifelse(grepl("^RT @",Tweets[[text]]),sub(".*(@.*?):[ ].*","\\1",Tweets[[text]]),"")
+  Tweets$author <- tolower(iconv(Tweets[[author]],to="ASCII//TRANSLIT"))
   
-  attributes(Tuits[[date]])$tzone <-tzone
+  attributes(Tweets[[date]])$tzone <-tzone
   
-  if (all(grepl("^$",Tuits$target))) {
-    TT <- aggregate(target~author, FUN = length, data=Tuits[Tuits$target=="",])
+  if (all(grepl("^$",Tweets$target))) {
+    TT <- aggregate(target~author, FUN = length, data=Tweets[Tweets$target=="",])
     names(TT) <- c("name","Tweets")
   }
   
   Messages <-
-    Tuits [Tuits$target=="" & Tuits$author!="",]
+    Tweets [Tweets$target=="" & Tweets$author!="",]
   Messages <- Messages[order(Messages$date),]
   if("location" %in% fields) Messages$location <- substr(Messages$location,1,50)
   Messages <- Messages[!is.na(date), c("date", "author", "text")]
@@ -565,8 +571,8 @@ d_cotweet <-function(Tuits, author="author", text="text", date="date",
   Authors$Walktrap =ifelse(Authors$Walktrap %in% highGroups,Authors$Walktrap,"Rest")
   
   
-  tuits <- Tuits[,c("author", fields), drop=FALSE]
-  AuthorsT <- aggregate(list(tuits[,fields]), by = list(tuits$author), max)
+  tweets <- Tweets[,c("author", fields), drop=FALSE]
+  AuthorsT <- aggregate(list(tweets[,fields]), by = list(tweets$author), max)
   names(AuthorsT)[1]<-"name"
   AuthorsT <- merge(AuthorsT, Authors[,-2, drop=FALSE], by="name", all.x=TRUE)
   AuthorsT <- AuthorsT[, c("name", fields), drop=FALSE]
@@ -616,16 +622,16 @@ d_cotweet <-function(Tuits, author="author", text="text", date="date",
     
     
     tt <- # Original number of tweets by authorn
-      as.data.frame(table(Tuits[Tuits[[date]]<= serie[i] & Tuits$target=="",author]))
+      as.data.frame(table(Tweets[Tweets[[date]]<= serie[i] & Tweets$target=="",author]))
     if(nrow(tt)==0) {
-      tt <- as.data.frame(table(Tuits[Tuits[[date]]<=serie[i],author]))
+      tt <- as.data.frame(table(Tweets[Tweets[[date]]<=serie[i],author]))
       tt$Freq=0
       
     }
     names(tt) <- c("name","tweets")
     
     if(count < length(serie)) {
-      ncoin[[i]] <- cotweet(Tuits[Tuits[[date]]<=serie[i],c(author, text)], searchers=searchers)
+      ncoin[[i]] <- cotweet(Tweets[Tweets[[date]]<=serie[i],c(author, text)], searchers=searchers)
       # t.out <- as.data.frame(xtabs(X~Source, ncoin[[i]]$links)); names(t.out) <-c("name", "mentions")
       # t.in  <- as.data.frame(xtabs(X~Target,data=ncoin[[i]]$links)); names(t.in)  <-c("name", "mentioned")
       graph <- toIgraph(ncoin[[i]])
@@ -667,7 +673,7 @@ d_cotweet <-function(Tuits, author="author", text="text", date="date",
 
 d_cotext <-function(data, text="text", sep=" ", min=1, date="date",
                      beginDate = NULL, endDate= NULL, interval= 3600, tzone = "Europe/Paris", limits=NULL,
-                     nFrames = Inf, seed=1, n = min(5000,nrow(Tuits)), minlabel=5, ...) {
+                     nFrames = Inf, seed=1, n = min(5000,nrow(data)), minlabel=5, ...) {
   
   arguments <- list(...)
   
@@ -771,10 +777,10 @@ d_cotext <-function(data, text="text", sep=" ", min=1, date="date",
 
 
 
-d_retweet <-function(Tuits, author="author", text="text", date="date",
+d_retweet <-function(Tweets, author="author", text="text", date="date",
                    fields=c("followers", "following", "statuses", "location"),
                    beginDate = NULL, endDate= NULL, interval= 3600, tzone = "Europe/Paris",
-                   nFrames = Inf, seed=1, n = min(5000,nrow(Tuits)), minlabel=5, ...) {
+                   nFrames = Inf, seed=1, n = min(5000,nrow(Tweets)), minlabel=5, ...) {
   
   arguments <- list(...)
   
@@ -792,50 +798,50 @@ d_retweet <-function(Tuits, author="author", text="text", date="date",
     directory <- arguments$dir 
     arguments$dir <- NULL
   }
-  if("location" %in% fields) Tuits$location <- substr(Tuits$location,1,50)
+  if("location" %in% fields) Tweets$location <- substr(Tweets$location,1,50)
   
   title <- arguments$main
   
   # T1 <- Sys.time() #A ----
   
-  Tuits$target<-ifelse(grepl("^RT @",Tuits[[text]]),sub(".*(@.*?):[ ].*","\\1",Tuits[[text]]),"")
+  Tweets$target<-ifelse(grepl("^RT @",Tweets[[text]]),sub(".*(@.*?):[ ].*","\\1",Tweets[[text]]),"")
   
-  attributes(Tuits[[date]])$tzone <-tzone
+  attributes(Tweets[[date]])$tzone <-tzone
   
- if (all(grepl("^$",Tuits$target))) {
-   TT <- aggregate(target~author, FUN = length, data=Tuits[Tuits$target=="",])
+ if (all(grepl("^$",Tweets$target))) {
+   TT <- aggregate(target~author, FUN = length, data=Tweets[Tweets$target=="",])
    names(TT) <- c("name","Tweets")
    }
   
   Messages <-
-    Tuits [Tuits$target=="" & Tuits$author!="",]
+    Tweets [Tweets$target=="" & Tweets$author!="",]
   Messages <- Messages[order(Messages$date),]
   if("location" %in% fields) Messages$location <- substr(Messages$location,1,50)
   Messages <- Messages[!is.na(date), c("date", "author", "text")]
   
   
-  Retuits  <- toRetuits(Tuits, fields=fields)
-  RetuitsC <- toRmessages(Retuits)
+  Retweets  <- toRetweets(Tweets, fields=fields)
+  RetweetsC <- toRmessages(Retweets)
  
   
   #T2 <- Sys.time() #B----
   
   
-  RetuitsN <- RetuitsC[1:min(nrow(RetuitsC),round(n/2)), c("text","Date","Source")]
+  RetweetsN <- RetweetsC[1:min(nrow(RetweetsC),round(n/2)), c("text","Date","Source")]
   
   
   set.seed(2020)
-  nsample <- min(nrow(Retuits),max(n-nrow(RetuitsN),n-round(n/2)))
-  SRTuits <- rbind(Retuits[sample(nrow(Retuits),nsample),c("text","Date","Source")], RetuitsN)
-  SRTuits$Target  <- sub(".*(@.*?):[ ].*","\\1",SRTuits$text)
-  SRTuits$message <- sub(".*?:[ ](.*)","\\1",SRTuits$text)
-  SRTuits <- SRTuits[,c("Source", "Target", "message", "Date")]
+  nsample <- min(nrow(Retweets),max(n-nrow(RetweetsN),n-round(n/2)))
+  SRTweets <- rbind(Retweets[sample(nrow(Retweets),nsample),c("text","Date","Source")], RetweetsN)
+  SRTweets$Target  <- sub(".*(@.*?):[ ].*","\\1",SRTweets$text)
+  SRTweets$message <- sub(".*?:[ ](.*)","\\1",SRTweets$text)
+  SRTweets <- SRTweets[,c("Source", "Target", "message", "Date")]
   
-  PRetuits <- base::setdiff(SRTuits[, c("message","Date","Source", "Target")], RetuitsN) 
+  PRetweets <- base::setdiff(SRTweets[, c("message","Date","Source", "Target")], RetweetsN) 
   
   #T3 <- Sys.time()
   
-  Links <- PRetuits[order(PRetuits$Date),c("Source", "Target", "Date")]
+  Links <- PRetweets[order(PRetweets$Date),c("Source", "Target", "Date")]
   
   
   Edges <- 
@@ -854,8 +860,8 @@ d_retweet <-function(Tuits, author="author", text="text", date="date",
   Authors$Walktrap =ifelse(Authors$Walktrap %in% highGroups,Authors$Walktrap,"Rest")
   
   
-  tuits <- Tuits[,c("author", fields)]
-  AuthorsT <- aggregate(list(tuits[,fields]), by = list(tuits$author), max)
+  tweets <- Tweets[,c("author", fields)]
+  AuthorsT <- aggregate(list(tweets[,fields]), by = list(tweets$author), max)
   names(AuthorsT)[1]<-"name"
   AuthorsT$link <- paste0('<a href="https://twitter.com/', 
                           sub("^@","", AuthorsT$name),
@@ -881,8 +887,8 @@ d_retweet <-function(Tuits, author="author", text="text", date="date",
   
   #T5 <- Sys.time() #E ----
   
-  if (is.null(beginDate) || beginDate > max(SRTuits$Date)) beginDate <- min(SRTuits$Date)
-  if (is.null(endDate)   || endDate   < min(SRTuits$Date))   endDate <- max(SRTuits$Date)
+  if (is.null(beginDate) || beginDate > max(SRTweets$Date)) beginDate <- min(SRTweets$Date)
+  if (is.null(endDate)   || endDate   < min(SRTweets$Date))   endDate <- max(SRTweets$Date)
   
   serie <- c(seq(as.POSIXct(beginDate)+ interval,as.POSIXct(endDate), interval), as.POSIXct(endDate))
   
@@ -903,13 +909,13 @@ d_retweet <-function(Tuits, author="author", text="text", date="date",
     
     arguments$main <-  paste0(title, " ", as.character(serie[i], format="%d/%m/%Y, %H:%M")) 
     arguments$zoom  <- max(.50,arguments$zoom*(.995)^(count-1)) # .10 y .965
-    rets  <- PRetuits[PRetuits$Date <= serie[i],]
+    rets  <- PRetweets[PRetweets$Date <= serie[i],]
     
     
     tt <- # Original number of tweets by authorn
-      as.data.frame(table(Tuits[Tuits[[date]]<= serie[i] & Tuits$target=="",author]))
+      as.data.frame(table(Tweets[Tweets[[date]]<= serie[i] & Tweets$target=="",author]))
     if(nrow(tt)==0) {
-      tt <- as.data.frame(table(Tuits[Tuits[[date]]<=serie[i],author]))
+      tt <- as.data.frame(table(Tweets[Tweets[[date]]<=serie[i],author]))
       tt$Freq=0
       
     }
@@ -952,30 +958,30 @@ d_retweet <-function(Tuits, author="author", text="text", date="date",
   # lista <- list("Set-up"= T2-T1, "Sample"= T3-T2, "Red"= T4-T3, 
   #              "Statistics"= T5-T4, "Loop"= T6-T5, "multigraph"= T7-T6, "Total"= T7-T1) # To check Sys.time() Add list to all <-
   Frames <- structure(ncoin, class="multigraph")
-  all <- list(authors= Authors, messages= Messages, Retweets= RetuitsC, retweets= PRetuits, nets =Frames)
+  all <- list(authors= Authors, messages= Messages, Retweets= RetweetsC, retweets= PRetweets, nets =Frames)
   return(all)
 }
 
 plot.multigraph <- function(multigraph) {
   do.call(multigraphCreate, multigraph)
 }
-toRetuits <- function(tuits, author="author", target="target", date="date", text="text", fields=NULL) {
-  Retuits <- tuits[tuits[[target]]!="" & tuits[[author]]!="" & !is.na(tuits[[date]]),c(date,author, target, text, fields),]
-  names(Retuits) <- c("Date","Source","Target", "text", fields)
-  return(Retuits)
+toRetweets <- function(tweets, author="author", target="target", date="date", text="text", fields=NULL) {
+  Retweets <- tweets[tweets[[target]]!="" & tweets[[author]]!="" & !is.na(tweets[[date]]),c(date,author, target, text, fields),]
+  names(Retweets) <- c("Date","Source","Target", "text", fields)
+  return(Retweets)
 }
 
 
-toRmessages <- function(retuits, author="author", target="target", date="date", text="text"){
-  retuits  <- retuits[order(retuits$Date),]
-  retuits$O  <- ave(as.numeric(retuits$Date), retuits$text, FUN = seq_along)
-  retuits$Retweets <- as.integer(ave(retuits$Target, retuits$text, FUN = length))
-  retuits$first.Date    <- ave(retuits$Date, retuits$text, FUN = function(x) {head(x,1)})
-  retuits$last.Date    <- ave(retuits$Date, retuits$text, FUN = function(x) {tail(x,1)})
-  RetuitsC <- retuits[retuits$O==1,]
-  RetuitsC$message <- ave(as.numeric(RetuitsC$Date), RetuitsC$Target, FUN = seq_along)
-  RetuitsC$message <- paste(sub("^@","",RetuitsC$Target),sprintf("%03d",RetuitsC$message),sep="#")
-  RetuitsC <- RetuitsC[order(RetuitsC$Retweets, decreasing= TRUE),c("text","Source","Target", "message", "Retweets", "Date", "last.Date")]
+toRmessages <- function(retweets, author="author", target="target", date="date", text="text"){
+  retweets  <- retweets[order(retweets$Date),]
+  retweets$O  <- ave(as.numeric(retweets$Date), retweets$text, FUN = seq_along)
+  retweets$Retweets <- as.integer(ave(retweets$Target, retweets$text, FUN = length))
+  retweets$first.Date    <- ave(retweets$Date, retweets$text, FUN = function(x) {head(x,1)})
+  retweets$last.Date    <- ave(retweets$Date, retweets$text, FUN = function(x) {tail(x,1)})
+  RetweetsC <- retweets[retweets$O==1,]
+  RetweetsC$message <- ave(as.numeric(RetweetsC$Date), RetweetsC$Target, FUN = seq_along)
+  RetweetsC$message <- paste(sub("^@","",RetweetsC$Target),sprintf("%03d",RetweetsC$message),sep="#")
+  RetweetsC <- RetweetsC[order(RetweetsC$Retweets, decreasing= TRUE),c("text","Source","Target", "message", "Retweets", "Date", "last.Date")]
 }
 
 

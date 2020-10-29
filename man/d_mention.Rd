@@ -5,16 +5,16 @@
 This function produces a dynamic and interactive netCoin network from a data frame or matrix of tweets (original messages) conecting authors and mentions (@) that allows to recreate the timeline of messages and interactions on Twitter.
 }
 \usage{
-d_mention(Tuits, author = "author", text = "text", 
+d_mention(Tweets, author = "author", text = "text", 
           date = "date", imagedir= NULL, ext="png",
           fields = c("followers", "following", "statuses", "location"), 
           beginDate = NULL, endDate= NULL, 
           interval= 3600, tzone = "Europe/Paris", 
           limits=NULL, nFrames = Inf, seed=1, 
-          n= min(5000,nrow(Tuits)/2), minlabel = 5, ...)
+          n= min(5000,nrow(Tweets)), minlabel = 5, ...)
 }
 \arguments{
-  \item{Tuits}{	A data frame with at least one vector of names.}
+  \item{Tweets}{	A data frame with at least one vector of names.}
   \item{author}{Vector name from data containing the profiles (users' names).}
   \item{text}{Vector name from data containing the messages (tweets).}
   \item{date}{Vector name from data containing the date when the messages were written.}
@@ -58,7 +58,7 @@ Modesto Escobar, Department of Sociology and Communication, University of Salama
 ## You can include all type of arguments from netCoin 
 ## and/or allNet and visualize the correspondent graph:
 
-# plot(d_mention(Tuits = Shakespeare, min=5,
+# plot(d_mention(Tweets = Shakespeare, min=5,
 #    author = "author", text = "text", 
 #    date = "date", zoom = .8, distance = 13, 
 #    repulsion = 7)$nets)

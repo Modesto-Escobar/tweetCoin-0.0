@@ -14,7 +14,7 @@ d_cotext(data, text="text", sep=" ", min=1, date="date",
 \arguments{
   \item{data}{A data frame with at least one vector of names.}
   \item{text}{Vector name from data containing the messages (tweets).}
-  \item{min}{{Minimum number of ocurrences of the text to be include in the graph, default = 1.}
+  \item{min}{Minimum number of ocurrences of the text to be include in the graph, default = 1.}
   \item{date}{Vector from data containing the date when the text was written.}
   \item{beginDate}{Date of first available message.}
   \item{endDate}{Date of last available message.}
@@ -45,7 +45,7 @@ Modesto Escobar, Department of Sociology and Communication, University of Salama
 ## Example using a sample of tweets and retweets with 
 ## the hashtag #Shakespeare:
 
-#library(netCoin)
+# library(netCoin)
 # data(Shakespeare)
 # Shakespeare$elements <- hashtag_extract(Shakespeare$text)
 
