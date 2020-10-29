@@ -225,6 +225,7 @@ mention <- function(data, author="author", text="text", ...) {
   n.obs <- sapply(q, length)
   seq.max <- seq_len(max(n.obs))
   mat <- as.data.frame(t(sapply(q, "[", i = seq.max)))
+  if(dim(mat)[1]==1 & dim(mat)[2]!=1) mat <- t(mat)
   rownames(mat) <- c()
   data[[author]] <- tolower(iconv(data[[author]],to="ASCII//TRANSLIT"))
   data$author <- ifelse(substr(data$author,1,1)=="@", data$author, paste0("@", data$author))
@@ -238,8 +239,8 @@ mention <- function(data, author="author", text="text", ...) {
   if(!exists("size", arguments)) arguments$size <- "tweets"
   if(!exists("labelSize", arguments)) arguments$labelSize <- "degree"
   net <- do.call(netCoin, arguments)
+  net$nodes <- merge(net$nodes, authors, all.x=TRUE, all.y=TRUE)
   net$nodes$link <- linkTwitter(net$nodes$name)
-  net$nodes <- merge(net$nodes, authors, all.x=TRUE)
   net$nodes$tweets <- ifelse(is.na(net$nodes$tweets), 0, net$nodes$tweets)
   if(exists("language",arguments) && arguments$language=="es") type = "tipo" else type = "type"
   net$nodes[[type]] <-ifelse(net$nodes$tweets==0, "only mentioned", "author")
@@ -494,7 +495,7 @@ d_mention <-function(Tweets, author="author", text="text", date="date", imagedir
                       fields, arguments$image,
                       "Walktrap", "walktrap", "size", "label")]
     
-    ncoin[[i]]$nodes <- merge(ncoin[[i]]$nodes, nodes, by="name")
+    ncoin[[i]]$nodes <- nodes
     arguments$nodes <- ncoin[[i]]
     ncoin[[i]] <- do.call(netCoin, arguments)
   }
