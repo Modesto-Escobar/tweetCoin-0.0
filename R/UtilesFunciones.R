@@ -371,6 +371,7 @@ d_mention <-function(Tweets, author="author", text="text", date="date", imagedir
     arguments$dir <- NULL
   }
   if("location" %in% fields) Tweets$location <- substr(Tweets$location,1,50)
+  if(exists("language",arguments) && arguments$language=="es") type = "tipo" else type = "type"
   
   title <- arguments$main
   
@@ -391,6 +392,10 @@ d_mention <-function(Tweets, author="author", text="text", date="date", imagedir
   Messages <- Messages[order(Messages$date),]
   if("location" %in% fields) Messages$location <- substr(Messages$location,1,50)
   Messages <- Messages[!is.na(date), c("date", "author", "text", fields)]
+  if(!is.null(fields)) {
+    Messages$name <- paste0("@",Messages$author)
+    Fields <- aggregate(.~name, data=Messages[,c(fields,"name")], FUN=tail,1)
+  }
   
   
   netMentions <- mention(Messages)
@@ -409,18 +414,9 @@ d_mention <-function(Tweets, author="author", text="text", date="date", imagedir
   Authors$Walktrap =ifelse(Authors$Walktrap %in% highGroups,Authors$Walktrap,"Rest")
   
   
-  tweets <- Messages[,c("author", fields), drop=FALSE]
-  AuthorsT <- aggregate(list(tweets[,fields]), by = list(tweets$author), max)
-  names(AuthorsT)[1]<-"name"
-
-  AuthorsT <- merge(AuthorsT, Authors, by="name", all.x=TRUE)
-  AuthorsT <- AuthorsT[, c("name", fields), drop=FALSE]
-  
-
   Authors$Degree   <- strength(Graph)
   Authors$label    <- ifelse(Authors$Degree>minlabel, as.character(Authors$name), "")
   Authors$size     <- ifelse(Authors$Degree>2, Authors$Degree, 0)
-  Authors          <- merge(Authors, AuthorsT, by="name", all.x=TRUE)
   if(exists("TT")) {
     Authors<- merge(Authors, TT, by="name", all.x=TRUE)
     Authors$Tweets    <- ifelse(is.na(Authors$Tweets), 0, Authors$Tweets)
@@ -429,6 +425,7 @@ d_mention <-function(Tweets, author="author", text="text", date="date", imagedir
   Authors <- merge(Authors, T.out, by="name", all.x=TRUE)
   Authors <- merge(Authors, T.in ,  by="name", all.x=TRUE)
   Authors$link <- linkTwitter(Authors$name)
+  if(!is.null(fields)) Authors <- merge(Authors, Fields, by="name", all.x=TRUE)
   arguments$image <- NULL
   if(!is.null(imagedir)) {
     Authors$image <- paste0(imagedir,"/",sub("@","",Authors$name),".",ext)
@@ -466,9 +463,9 @@ d_mention <-function(Tweets, author="author", text="text", date="date", imagedir
     
     
     tt <- # Original number of tweets by authorn
-      as.data.frame(table(Messages[Messages[[date]]<= serie[i],author]))
+      as.data.frame(table(Messages[Messages[[date]]<= serie[i], "name"]))
     if(nrow(tt)==0) {
-      tt <- as.data.frame(table(Messages[Messages[[date]]<=serie[i],author]))
+      tt <- as.data.frame(table(Messages[Messages[[date]]<=serie[i], "name"]))
       tt$Freq=0
       
     }
@@ -490,7 +487,8 @@ d_mention <-function(Tweets, author="author", text="text", date="date", imagedir
     nodes$tweets    <- ifelse(is.na(nodes$tweets), 0, nodes$tweets)
     nodes$mentions    <- ifelse(is.na(nodes$mentions), 0, nodes$mentions)
     nodes$mentioned    <- ifelse(is.na(nodes$mentioned), 0, nodes$mentioned)
-    nodes <- nodes[,c("name","link", "tweets", "mentions", "mentioned",
+    nodes[[type]] <-ifelse(nodes$tweets==0, "only mentioned", "author")
+    nodes <- nodes[,c("name","link", type, "tweets", "mentions", "mentioned",
                       "Tweets", "Mentions","Mentioned", "Degree", 
                       fields, arguments$image,
                       "Walktrap", "walktrap", "size", "label")]
@@ -554,6 +552,11 @@ d_cotweet <-function(Tweets, author="author", text="text", date="date",
   Messages <- Messages[order(Messages$date),]
   if("location" %in% fields) Messages$location <- substr(Messages$location,1,50)
   Messages <- Messages[!is.na(date), c("date", "author", "text", fields)]
+  if(!is.null(fields)) {
+    Messages$name <- paste0("@",Messages$author)
+    Fields <- aggregate(.~name, data=Messages[,c(fields,"name")], FUN=tail,1)
+    Messages$name <- NULL
+  }
   
   
   netCoTweet <- cotweet(Messages, searchers=searchers)
@@ -571,18 +574,10 @@ d_cotweet <-function(Tweets, author="author", text="text", date="date",
   highGroups <- names(sort(table(Authors$Walktrap),decreasing = TRUE))[1:16] # 16 number of high groups
   Authors$Walktrap =ifelse(Authors$Walktrap %in% highGroups,Authors$Walktrap,"Rest")
   
-  
-  tweets <- Tweets[,c("author", fields), drop=FALSE]
-  AuthorsT <- aggregate(list(tweets[,fields]), by = list(tweets$author), max)
-  names(AuthorsT)[1]<-"name"
-  AuthorsT <- merge(AuthorsT, Authors[,-2, drop=FALSE], by="name", all.x=TRUE)
-  AuthorsT <- AuthorsT[, c("name", fields), drop=FALSE]
-  
-  
-  Authors$Degree   <- strength(Graph)
+    Authors$Degree   <- strength(Graph)
   Authors$label    <- ifelse(Authors$Degree>minlabel, as.character(Authors$name), "")
   Authors$size     <- ifelse(Authors$Degree>2, Authors$Degree, 0)
-  Authors          <- merge(Authors, AuthorsT, by="name", all.x=TRUE)
+  if(!is.null(fields)) Authors <- merge(Authors, Fields, by="name", all.x=TRUE)
   Authors$link <- linkTwitter(Authors$name)
   if(exists("TT")) {
     Authors<- merge(Authors, TT, by="name", all.x=TRUE)
@@ -668,7 +663,7 @@ d_cotweet <-function(Tweets, author="author", text="text", date="date",
   # lista <- list("Set-up"= T2-T1, "Sample"= T3-T2, "Red"= T4-T3, 
   #              "Statistics"= T5-T4, "Loop"= T6-T5, "multigraph"= T7-T6, "Total"= T7-T1) # To check Sys.time() Add list to all <-
   Frames <- structure(ncoin, class="multigraph")
-  all <- list(authors= Authors, messages= Messages, nets = Frames)
+  all <- structure(list(authors= Authors, messages= Messages, nets = Frames), class="dyntweets")
   return(all)
 }
 
@@ -959,7 +954,7 @@ d_retweet <-function(Tweets, author="author", text="text", date="date",
   # lista <- list("Set-up"= T2-T1, "Sample"= T3-T2, "Red"= T4-T3, 
   #              "Statistics"= T5-T4, "Loop"= T6-T5, "multigraph"= T7-T6, "Total"= T7-T1) # To check Sys.time() Add list to all <-
   Frames <- structure(ncoin, class="multigraph")
-  all <- list(authors= Authors, messages= Messages, Retweets= RetweetsC, retweets= PRetweets, nets =Frames)
+  all <- structure(list(authors= Authors, messages= Messages, Retweets= RetweetsC, retweets= PRetweets, nets =Frames), class="dyntweets")
   return(all)
 }
 
