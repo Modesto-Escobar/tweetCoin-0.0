@@ -231,10 +231,15 @@ mention <- function(data, author="author", text="text", ...) {
   data$author <- ifelse(substr(data$author,1,1)=="@", data$author, paste0("@", data$author))
   authors <- as.data.frame(table(data$author)); names(authors) <- c("name", "tweets")
   newData <- cbind(data[,author], mat)
-  links <- edgeList(newData, procedures = "shape")
-  links$X <- 1
-  Links <- aggregate( X~Source+Target, data=links, FUN=length)
-  arguments <- list(links=Links, lwidth="X", ...)
+  if(length(table(newData$V1))>0) {
+    links <- edgeList(newData, procedures = "shape")
+    links$X <- 1
+    Links <- aggregate( X~Source+Target, data=links, FUN=length)
+    arguments <- list(links=Links, lwidth="X", ...)
+  }
+  else {
+    arguments <- list(nodes=data.frame(name=unique(data[[author]])), ...)
+  }
   if(!exists("showArrows", arguments)) arguments$showArrows <- TRUE
   if(!exists("size", arguments)) arguments$size <- "tweets"
   if(!exists("labelSize", arguments)) arguments$labelSize <- "degree"
@@ -351,7 +356,7 @@ type <- function(Profiles, followers="followers", following="following",
 
 d_mention <-function(Tweets, author="author", text="text", date="date", imagedir=NULL, ext="png",
                      fields=c("followers", "following", "statuses", "location"),
-                     beginDate = NULL, endDate= NULL, interval= 3600, tzone = "Europe/Paris", limits=NULL,
+                     beginDate = NULL, endDate= NULL, interval= 3600, tzone = "Europe/Paris", tCutpoints=NULL,
                      nFrames = Inf, seed=1, n = min(5000,nrow(Tweets)), minlabel=5, ...) {
   
   arguments <- list(...)
@@ -399,8 +404,14 @@ d_mention <-function(Tweets, author="author", text="text", date="date", imagedir
   
   
   netMentions <- mention(Messages)
-  T.out <- as.data.frame(xtabs(X~Source,data=netMentions$links)); names(T.out) <- c("name","Mentions")
-  T.in <-  as.data.frame(xtabs(X~Target,data=netMentions$links)); names(T.in) <- c("name","Mentioned")
+  if(!is.null(netMentions$links)) {
+    T.out <- as.data.frame(xtabs(X~Source,data=netMentions$links)); names(T.out) <- c("name","Mentions")
+    T.in <-  as.data.frame(xtabs(X~Target,data=netMentions$links)); names(T.in) <- c("name","Mentioned")
+  }
+  else {
+    T.out <-  data.frame(name=netMentions$nodes$name, Mentions=rep(0, nrow(netMentions$nodes)))
+    T.in  <-  data.frame(name=netMentions$nodes$name, Mentioned=rep(0, nrow(netMentions$nodes)))
+  }
   Graph <- toIgraph(netMentions)
   
   
@@ -439,7 +450,7 @@ d_mention <-function(Tweets, author="author", text="text", date="date", imagedir
   if (is.null(beginDate) || beginDate > max(Messages$date)) beginDate <- min(Messages$date)
   if (is.null(endDate)   || endDate   < min(Messages$date))   endDate <- max(Messages$date)
   
-  if(!is.null(limits)) serie <- c(limits[limits > beginDate & limits <= endDate], as.POSIXct(endDate))
+  if(!is.null(tCutpoints)) serie <- c(as.POSIXct(tCutpoints[tCutpoints > beginDate & tCutpoints <= endDate]), as.POSIXct(endDate))
   else serie <- c(seq(as.POSIXct(beginDate)+ interval,as.POSIXct(endDate), interval), as.POSIXct(endDate))
   
   ncoin <- zoom <- main <- list()
@@ -472,9 +483,13 @@ d_mention <-function(Tweets, author="author", text="text", date="date", imagedir
     names(tt) <- c("name","tweets")
     
     ncoin[[i]] <- mention(Messages[Messages[[date]]<=serie[i],c(author, text)])
+    if(is.null(ncoin[[i]]$links)) {
+      ncoin[[i]] <- NULL
+      next
+    }
     t.out <- as.data.frame(xtabs(X~Source, ncoin[[i]]$links)); names(t.out) <-c("name", "mentions")
     t.in  <- as.data.frame(xtabs(X~Target,data=ncoin[[i]]$links)); names(t.in)  <-c("name", "mentioned")
-    
+
     graph <- toIgraph(ncoin[[i]])
     
     community <- membership(cluster_walktrap(graph))
@@ -497,7 +512,6 @@ d_mention <-function(Tweets, author="author", text="text", date="date", imagedir
     arguments$nodes <- ncoin[[i]]
     ncoin[[i]] <- do.call(netCoin, arguments)
   }
-  
   ncoin[["mode"]] <- "frame"
   if(exists("directory")) ncoin[["dir"]] <- directory
   
@@ -512,7 +526,7 @@ d_mention <-function(Tweets, author="author", text="text", date="date", imagedir
 
 d_cotweet <-function(Tweets, author="author", text="text", date="date",
                     fields=c("followers", "following", "statuses", "location"), searchers="@#",
-                    beginDate = NULL, endDate= NULL, interval= 3600, tzone = "Europe/Paris", limits=NULL,
+                    beginDate = NULL, endDate= NULL, interval= 3600, tzone = "Europe/Paris", tCutpoints=NULL,
                     nFrames = Inf, seed=1, n = min(5000,nrow(Tweets)), minlabel=5, ...) {
   
   arguments <- list(...)
@@ -594,7 +608,7 @@ d_cotweet <-function(Tweets, author="author", text="text", date="date",
   if (is.null(beginDate) || beginDate > max(Messages$date)) beginDate <- min(Messages$date)
   if (is.null(endDate)   || endDate   < min(Messages$date))   endDate <- max(Messages$date)
   
-  if(!is.null(limits)) serie <- c(limits[limits > beginDate & limits <= endDate], as.POSIXct(endDate))
+  if(!is.null(tCutpoints)) serie <- c(as.POSIXct(tCutpoints[tCutpoints > beginDate & tCutpoints <= endDate]), as.POSIXct(endDate))
   else serie <- c(seq(as.POSIXct(beginDate)+ interval,as.POSIXct(endDate), interval), as.POSIXct(endDate))
   
   ncoin <- zoom <- main <- list()
@@ -668,7 +682,7 @@ d_cotweet <-function(Tweets, author="author", text="text", date="date",
 }
 
 d_cotext <-function(data, text="text", sep=" ", min=1, date="date",
-                     beginDate = NULL, endDate= NULL, interval= 3600, tzone = "Europe/Paris", limits=NULL,
+                     beginDate = NULL, endDate= NULL, interval= 3600, tzone = "Europe/Paris", tCutpoints=NULL,
                      nFrames = Inf, seed=1, n = min(5000,nrow(data)), minlabel=5, ...) {
   
   arguments <- list(...)
@@ -722,7 +736,7 @@ d_cotext <-function(data, text="text", sep=" ", min=1, date="date",
   if (is.null(beginDate) || beginDate > max(data[[date]])) beginDate <- min(data[[date]])
   if (is.null(endDate)   || endDate   < min(data[[date]]))   endDate <- max(data[[date]])
   
-  if(!is.null(limits)) serie <- c(limits[limits > beginDate & limits <= endDate], endDate)
+  if(!is.null(tCutpoints)) serie <- c(as.POSIXct(tCutpoints[tCutpoints > beginDate & tCutpoints <= endDate]), as.POSIXct(endDate))
   else serie <- c(seq(as.POSIXct(beginDate)+ interval,as.POSIXct(endDate), interval), as.POSIXct(endDate))
   
   ncoin <- zoom <- main <- list()
@@ -774,9 +788,9 @@ d_cotext <-function(data, text="text", sep=" ", min=1, date="date",
 
 
 d_retweet <-function(Tweets, author="author", text="text", date="date",
-                   fields=c("followers", "following", "statuses", "location"),
-                   beginDate = NULL, endDate= NULL, interval= 3600, tzone = "Europe/Paris",
-                   nFrames = Inf, seed=1, n = min(5000,nrow(Tweets)), minlabel=5, ...) {
+              fields=c("followers", "following", "statuses", "location"),
+              beginDate = NULL, endDate= NULL, interval= 3600, tzone = "Europe/Paris",
+              tCutpoints=NULL, nFrames = Inf, seed=1, n = min(5000,nrow(Tweets)), minlabel=5, ...) {
   
   arguments <- list(...)
   
@@ -886,7 +900,8 @@ d_retweet <-function(Tweets, author="author", text="text", date="date",
   if (is.null(beginDate) || beginDate > max(SRTweets$Date)) beginDate <- min(SRTweets$Date)
   if (is.null(endDate)   || endDate   < min(SRTweets$Date))   endDate <- max(SRTweets$Date)
   
-  serie <- c(seq(as.POSIXct(beginDate)+ interval,as.POSIXct(endDate), interval), as.POSIXct(endDate))
+  if(!is.null(tCutpoints)) serie <- c(as.POSIXct(tCutpoints[tCutpoints > beginDate & tCutpoints <= endDate]), as.POSIXct(endDate))
+  else serie <- c(seq(as.POSIXct(beginDate)+ interval,as.POSIXct(endDate), interval), as.POSIXct(endDate))
   
   ncoin <- zoom <- main <- list()
   nFrames <- ifelse(nFrames==Inf,length(serie),nFrames)

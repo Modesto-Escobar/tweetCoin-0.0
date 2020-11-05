@@ -10,7 +10,7 @@ d_mention(Tweets, author = "author", text = "text",
           fields = c("followers", "following", "statuses", "location"), 
           beginDate = NULL, endDate= NULL, 
           interval= 3600, tzone = "Europe/Paris", 
-          limits=NULL, nFrames = Inf, seed=1, 
+          tCutpoints=NULL, nFrames = Inf, seed=1, 
           n= min(5000,nrow(Tweets)), minlabel = 5, ...)
 }
 \arguments{
@@ -25,7 +25,7 @@ d_mention(Tweets, author = "author", text = "text",
   \item{endDate}{Date of last available message.}
   \item{interval}{The lenght of the time intervals (default = 3600 seconds).}
   \item{tzone}{Time zone (e.g., "Europe/Paris").}
-  \item{limits}{Date vector with the cutpoints for dynamic graphs.}
+  \item{tCutpoints}{Date vector with the cutpoints for dynamic graphs.}
   \item{nFrames}{The number of frames to render.}
   \item{seed}{A single value, interpreted as an integer, or NULL.}
   \item{n}{Sample the network if the number of nodes is greater than 5000 or n.}

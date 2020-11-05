@@ -7,7 +7,7 @@ This function produces a dynamic and interactive netCoin network from a data fra
 \usage{
 d_cotext(data, text = "text", sep =" ", min = 1, date = "date", 
           beginDate = NULL, endDate = NULL, interval = 3600, 
-          tzone = "Europe/Paris", limits = NULL, nFrames = Inf,
+          tzone = "Europe/Paris", tCutpoints = NULL, nFrames = Inf,
           seed = 1, n = min(5000,nrow(data)), minlabel = 5, ...)
 }
 \arguments{
@@ -19,7 +19,7 @@ d_cotext(data, text = "text", sep =" ", min = 1, date = "date",
   \item{endDate}{Date of last available message.}
   \item{interval}{The end-points of the interval (default = 3600).}
   \item{tzone}{Time zone (i.e. "Europe/Paris").}
-  \item{limits}{Date vector with the cutpoints for dynamic graphs.}  
+  \item{tCutpoints}{Date vector with the cutpoints for dynamic graphs.}  
   \item{nFrames}{The number of frames to render (default = Inf).}
   \item{seed}{A single value, interpreted as an integer, or NULL.}
   \item{n}{Sample the network if the number of nodes is greater than 5000 or n.}
