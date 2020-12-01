@@ -207,3 +207,57 @@ prepareqda <- function(data=data) {
   return(newdata)
 }
 
+join_tweets <- function(names, type = c("user", "search", "stream"), format = c("binary","delimited")) {
+  
+  number_profiles <- length(names)
+  
+  
+  if (number_profiles >1)
+  {
+    if (format[1] == 'binary') extension <- ".dat" 
+    else  if (format[1] == "delimited") extension <- ".csv"
+    
+    for (jj in 1:number_profiles)
+    {
+      
+      
+      if (type[1] == "user") output_file_name <- paste0("user_tweets_", names[jj], extension)
+      else if (type[1] == "search") output_file_name <- paste0("search_tweets_", names[jj], extension)
+      else if (type[1] == "stream") output_file_name <- paste0("stream_tweets_", names[jj], extension)
+      
+      if (format[1] == "binary") 
+      {
+        load(output_file_name)
+      }
+      else if (format[1] == "delimited") 
+      {
+        tweets<-read_twitter_csv(file = output_file_name, unflatten = FALSE)
+      }
+      
+      if (jj == 1)
+      {
+        tweets_tmp <- tweets
+      }
+      else if (jj > 1)
+      {
+        tweets_tmp <- bind_rows(tweets_tmp, tweets)
+      }
+      
+      
+      rm(tweets)
+      
+      
+      
+      
+    }
+    
+    tweets <- tweets_tmp
+    rm(tweets_tmp)
+    return(tweets)
+  }
+  else
+  {
+    print ("The number of profiles must be greater than 2")
+  }
+  
+}
