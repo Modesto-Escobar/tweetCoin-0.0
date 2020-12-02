@@ -261,3 +261,21 @@ join_tweets <- function(names, type = c("user", "search", "stream"), format = c(
   }
   
 }
+
+crawl_tweets <- function(file = "users.txt", maxtweets = 100, home = FALSE, parse = TRUE, check = TRUE, token = NULL, 
+                         include_rts = FALSE, output_file_name = NULL, format = c("binary", "delimited"))
+{
+  users <- read.table(file)
+  for (jj in 1:nrow(users))
+  {
+    x <- sprintf ("Retrieving tweets from the profile %s", users[jj,])
+    print (x)
+    user_tweet (users[jj,], maxtweets = maxtweets, home = home, parse = parse, check = check, token = token, 
+                include_rts = include_rts, output_file_name = output_file_name, format = format)
+    x <- sprintf ("Profile %s finished", users[jj,])
+    print(x)
+    print ("**********************************************")
+  }
+  
+  
+}
