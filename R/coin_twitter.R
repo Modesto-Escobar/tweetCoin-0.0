@@ -50,14 +50,23 @@ user_tweet <- function(user, maxtweets = 100, home = FALSE, parse = TRUE, check 
     ultimo_id = toString(as.bigz(ultimo_id) + 1)
     datos_new <- get_timeline(user = user, n = maxtweets, since_id = ultimo_id,
                               home = home, parse = parse, check = check, token = token, include_rts = include_rts)
-    write_as_csv(x = datos_new, file_name = "./tmp.csv")
-    datos_new<-read_twitter_csv(file = "./tmp.csv", unflatten = TRUE)
-    tweets <- rbind(datos_new, datos_old)
+    if (nrow(datos_new) > 0)
+    {
+      write_as_csv(x = datos_new, file_name = "./tmp.csv")
+      datos_new<-read_twitter_csv(file = "./tmp.csv", unflatten = TRUE)
+      tweets <- rbind(datos_new, datos_old)
+      
+      if (format[1] == "binary") save(tweets, file=output_file_name)
+      else if (format[1] == "delimited") write_as_csv(x = tweets, file_name = output_file_name)
+      print(paste("Numero total de tweets:", nrow(tweets)))
+      print(paste("Numero de tweets nuevos:", nrow(datos_new)))
+    }
+    else
+    {
+      print(paste("Numero total de tweets:", nrow(datos_old)))
+      print(paste("Numero de tweets nuevos:", nrow(datos_new)))
+    }
     
-    if (format[1] == "binary") save(tweets, file=output_file_name)
-    else if (format[1] == "delimited") write_as_csv(x = tweets, file_name = output_file_name)
-    print(paste("Numero total de tweets:", nrow(tweets)))
-    print(paste("Numero de tweets nuevos:", nrow(datos_new)))
   }
 }
 
@@ -91,15 +100,24 @@ search_tweet <- function(search, maxtweets = 300, type = "recent", include_rts =
     ultimo_id <- datos_old[1,]$status_id
     ultimo_id = toString(as.bigz(ultimo_id) + 1)
     datos_new <- search_tweets(search, n = maxtweets, type = type, include_rts = include_rts, geocode = geocode, since_id = ultimo_id, parse = parse, token = token, retryonratelimit = retryonratelimit, verbose = verbose)
-    write_as_csv(x = datos_new, file_name = "./tmp.csv")
-    datos_new<-read_twitter_csv(file = "./tmp.csv", unflatten = TRUE)
-    tweets <- rbind(datos_new, datos_old)
+    if (nrow(datos_new) > 0)
+    {
+      write_as_csv(x = datos_new, file_name = "./tmp.csv")
+      datos_new<-read_twitter_csv(file = "./tmp.csv", unflatten = TRUE)
+      tweets <- rbind(datos_new, datos_old)
+      
+      if (format[1] == "binary") save(tweets, file=output_file_name)
+      else if (format[1] == "delimited") write_as_csv(x = tweets, file_name = output_file_name)
+      
+      print(paste("Numero total de tweets:", nrow(tweets)))
+      print(paste("Numero de tweets nuevos:", nrow(datos_new)))
+    }
+    else
+    {
+      print(paste("Numero total de tweets:", nrow(datos_old)))
+      print(paste("Numero de tweets nuevos:", nrow(datos_new)))
+    }
     
-    if (format[1] == "binary") save(tweets, file=output_file_name)
-    else if (format[1] == "delimited") write_as_csv(x = tweets, file_name = output_file_name)
-    
-    print(paste("Numero total de tweets:", nrow(tweets)))
-    print(paste("Numero de tweets nuevos:", nrow(datos_new)))
   }
 }
 
