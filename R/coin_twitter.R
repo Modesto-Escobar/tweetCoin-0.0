@@ -34,10 +34,13 @@ user_tweet <- function(user, maxtweets = 100, home = FALSE, parse = TRUE, check 
   
   if(!(output_file_name %in% list.files())){
     tweets <- get_timeline(user = user, n = maxtweets, home = home, parse = parse, check = check, token = token, include_rts = include_rts)
-    if (format[1] == 'binary') save(tweets, file=output_file_name)
-    else  if (format[1] == "delimited") write_as_csv(x = tweets, file_name = output_file_name)
-    print(paste("Numero de tweets nuevos:", nrow(tweets)))
-    print("Nuevo fichero creado")
+    if (nrow(tweets) > 0)
+    {
+      if (format[1] == 'binary') save(tweets, file=output_file_name)
+      else  if (format[1] == "delimited") write_as_csv(x = tweets, file_name = output_file_name)
+      print(paste("Numero de tweets nuevos:", nrow(tweets)))
+      print("Nuevo fichero creado")
+    }
   }
   else {
     if (format[1] == 'binary'){
@@ -79,14 +82,16 @@ search_tweet <- function(search, maxtweets = 300, type = "recent", include_rts =
    
    if(is.null(output_file_name)) output_file_name <- paste0("search_tweets_", search, extension)
                            
-  if(!(output_file_name %in% list.files())) {
+    if(!(output_file_name %in% list.files())) {
     tweets <- search_tweets(search, n = maxtweets, type = type, include_rts = include_rts, geocode = geocode, since_id = since_id, parse = parse, token = token, retryonratelimit = retryonratelimit, verbose = verbose)
-    
-    if (format[1] == 'binary') save(tweets, file=output_file_name)
-    else  if (format[1] == "delimited") write_as_csv(x = tweets, file_name = output_file_name)
-    
-    print(paste("Numero de tweets nuevos:", nrow(tweets)))
-    print("Nuevo fichero creado")
+    if (nrow(tweets) > 0)
+      {
+      if (format[1] == 'binary') save(tweets, file=output_file_name)
+      else  if (format[1] == "delimited") write_as_csv(x = tweets, file_name = output_file_name)
+      
+      print(paste("Numero de tweets nuevos:", nrow(tweets)))
+      print("Nuevo fichero creado")
+    }
   }
   else {
     
@@ -140,7 +145,7 @@ stream_tweet <- function(search, timeout = 120, parse = TRUE, token = NULL, outp
     if (file.exists(output_file_name_json)) file.remove(output_file_name_json)
 }
 
-follow_tweet <- function(user, page = "-1", retryonratelimit = TRUE, parse = TRUE, verbose = TRUE, token = NULL){
+followers_user <- function(user, page = "-1", retryonratelimit = TRUE, parse = TRUE, verbose = TRUE, token = NULL){
   look <- lookup_users(user)
   datos_perfil <- users_data(look)
   num_seguidores <- datos_perfil$followers_count
