@@ -311,7 +311,7 @@ retweet <- function(data, sender="author", text="text", language="en", nodes=NUL
 
 
 
-calCentr <-function(graph, measures=c("degree","closeness","betweenness","eigen"), order="") {
+calCentr <-function(graph, measures=c("degree","wdegree","closeness","betweenness","eigen"), order="") {
   if (any(measures=="all",  measures=="ALL")) measures <- c("degree","closeness","betweenness","eigen")
   if (inherits(graph,"netCoin")) graph <- toIgraph(graph)
   m <- tolower(substring(measures,1,1))
@@ -319,8 +319,17 @@ calCentr <-function(graph, measures=c("degree","closeness","betweenness","eigen"
   G <- data.frame(nodes=igraph::V(graph)$name)
   H <- data.frame(nodes="Total")
   if("d" %in% m) {
-    R <- centr_degree(graph)
-    G$degree <- R$res
+    R    <- centr_degree(graph)
+    G$degree  <- R$res
+    if("w" %in% m) G$wdegree <- strength(graph, weights=E(graph)$N)
+    if(is_directed(graph)) {
+      Rin  <- centr_degree(graph, "in")
+      Rout <- centr_degree(graph, "out")
+      G$indegree   <- Rin$res
+      if("w" %in% m) G$windegree  <- strength(graph, mode="in", weights=E(graph)$N)      
+      G$outdegree  <- Rout$res
+      if("w" %in% m) G$woutdegree <- strength(graph, mode="out", weights=E(graph)$N)
+    }
     H$degree <- R$centralization
   }
   if("c" %in% m) {
@@ -353,6 +362,90 @@ type <- function(Profiles, followers="followers", following="following",
                                              ifelse(Profiles[[X]] < 0 & Profiles[[Y]] > 0, "hidden influential", "Not class."))))
   return(Profiles)
 }
+
+sTwitter <- function(original, retweets=NULL, statistics=c("external", "internal", "mentions", "centrality"),
+                     id="status_id", author="author") {
+  if(!is.null(original)){
+    if(!exists(id,    original)) stop(paste0(id, " is not found as id in original."))
+    if(!exists(author,original)) stop(paste0(author, " is not found as author in original."))
+    names(original) <- gsub("stauses", "statuses", names(original))
+  } 
+  if(!is.null(retweets)){
+    if(!exists(id,    retweets)) stop(paste0(id, " is not found as id in retweets."))
+    if(!exists(author,retweets)) stop(paste0(author, " is not found as id in retweets."))  
+    names(retweets) <- gsub("stauses", "statuses", names(retweets))
+  }
+  external <- internal <- mentions <- centrality <- eigenvalue <- NULL
+  statistics <- gsub("^ei","",statistics)
+  s <- tolower(substring(statistics,1,1))
+  All <- rbind(original, retweets)
+  Complete <- aggregate(All[[id]], by=list(profile=All[[author]]), FUN="length")
+  names(Complete)[2] <- "issues"
+  
+  if("e" %in% s) { #external
+    Foll  <- aggregate(All[,c("followers","following","statuses")], by=list(profile=All[[author]]), FUN=tail, n=1)
+    Complete <- cbind(Complete, Foll[,-1])
+    external   <- c("followers", "following", "statuses")
+  }
+  
+  if(!is.null(original) & "m" %in% s) { #mentions
+    A <- mention(original)
+    
+    Act <- aggregate(A$links[["X"]], by=list(profile=A$links$Source), FUN="sum")
+    names(Act)[2] <- "profilesm"
+    Complete <- merge(Complete, Act, all.x=TRUE)
+    
+    Men <-  aggregate(A$links[["X"]], by=list(profile=A$links$Target), FUN="sum")
+    names(Men)[2] <- "mentioned"
+    Complete <- merge(Complete, Men, all.x=TRUE)
+    mentions   <- c("profilesm", "mentioned")
+  }
+  
+  if(!is.null(retweets) & "i" %in% s) { #internal
+    N <-retweet(retweets, showArrows=TRUE)
+    
+    Retd <- aggregate(N$links[["N"]], by=list(profile=N$links$Target), FUN="sum")
+    names(Retd)[2] <- "retweeted"
+    Complete <- merge(Complete, Retd, all.x=TRUE)
+    
+    Rets <- aggregate(N$links[["N"]], by=list(profile=N$links$Source), FUN="sum")
+    names(Rets)[2] <- "retweets"
+    Complete <- merge(Complete, Rets, all.x=TRUE)
+    Complete[is.na(Complete)] <- 0
+    Complete$tweets <- Complete$issues-Complete$retweets
+    internal   <- c("tweets", "retweets", "retweeted")
+  }
+  
+  if(!is.null(retweets) & "c" %in% s) { #centrality
+    if(!exists("N")) N <-retweet(retweets, showArrows=TRUE)
+    if("w" %in% s) {
+      Central <- calCentr(N, c("degree", "wdegree", "closeness", "betweenness"))
+      centrality <- c("degree", "wdegree", "indegree", "windegree",
+                      "outdegree", "woutdegree", "closeness", "betweenness")
+    }
+    else {
+      Central <- calCentr(N, c("degree", "wdegree", "closeness", "betweenness"))
+      centrality <- c("degree", "indegree", "outdegree", "closeness", "betweenness")
+    }
+    names(Central$nodes)[1] <- "profile"
+    Complete <- merge(Complete, Central$nodes, all.x=TRUE)
+    Complete[is.na(Complete)] <- 0
+  }
+  
+  if(!is.null(retweets) & "g" %in% s) { #eigenvalue
+    if(!exists("N")) N <-retweet(retweets, showArrows=TRUE)
+    Eigen <- calCentr(N, "eigenvalue")
+    names(Eigen$nodes)[1] <- "profile"
+    Complete <- merge(Complete, Eigen$nodes, all.x=TRUE, incomparables=0)
+    Complete[is.na(Complete)] <- 0
+    eigenvalue <- "eigenvalue"
+  }
+  
+  fields <- c("profile", external, "issues", internal, mentions, centrality, eigenvalue)
+  
+  return(Complete[,fields])
+}
+
 
 d_mention <-function(Tweets, author="author", text="text", date="date", imagedir=NULL, ext="png",
                      fields=c("followers", "following", "statuses", "location"),

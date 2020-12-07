@@ -6,7 +6,7 @@ Title: netCoin for Twitter
 Description: Create interactive analytic networks from Twitter messages.
 License: GPL-2 | GPL-3
 Depends: R (>= 3.5.0)
-Imports: igraph (>= 1.0.1), gmp (>= 0.6), haven (>= 1.1.0), netCoin (>= 1.2.15), rtweet (>= 0.7.0), WikidataQueryServiceR (>= 1.0.0), WikidataR (>= 1.4.0), dplyr (>= 1.0.2)
+Imports: igraph (>= 1.0.1), gmp (>= 0.6), haven (>= 1.1.0), netCoin (>= 1.2.15), rtweet (>= 0.7.0), WikidataQueryServiceR (>= 1.0.0), WikidataR (>= 1.4.0)
 Suggests: knitr, rmarkdown, lavaan, shiny
 VignetteBuilder: knitr
 NeedsCompilation: no

@@ -183,7 +183,7 @@ followers_user <- function(user, page = "-1", retryonratelimit = TRUE, parse = T
 }
 
 prepare <- function(data=data, info=c("fields", "cotweets", "inform"), original= TRUE, quote=FALSE, retweet=FALSE) {
-  if ("fields" %in% info) fields <- c("screen_name","text","created_at","is_quote", "is_retweet") else fields <- NULL
+  if ("fields" %in% info) fields <- c("status_id","screen_name","text","created_at","is_quote", "is_retweet") else fields <- NULL
   if ("cotweets" %in% info) cotweets <- c("quoted_screen_name", "retweet_screen_name") else cotweets <- NULL
   if ("inform" %in% info) inform <- c("followers_count", "friends_count", "statuses_count", "location") else inform <- NULL
   Inform <- c("followers", "following", "statuses", "location")
@@ -194,8 +194,8 @@ prepare <- function(data=data, info=c("fields", "cotweets", "inform"), original=
   newdata$text  <- ifelse(newdata$is_retweet, paste0("RT @", newdata$retweet_screen_name, ": ", newdata$text), newdata$text)
   newdata$text  <- ifelse(newdata$is_quote  , paste0("RT @", newdata$quoted_screen_name, ": ", newdata$text), newdata$text)
   names(newdata) <- sub("^screen_name","author", names(newdata))
-  newdata <- newdata[,c("author","text","date",inform)]
-  names(newdata)[4:dim(newdata)[2]] <- Inform
+  newdata <- newdata[,c("status_id","author","text","date",inform)]
+  names(newdata)[5:dim(newdata)[2]] <- Inform
   return(newdata)
 }
 
@@ -263,7 +263,7 @@ join_tweets <- function(names, type = c("user", "search", "stream"), format = c(
       }
       else if (jj > 1)
       {
-        tweets_tmp <- bind_rows(tweets_tmp, tweets)
+        tweets_tmp <- rbind(tweets_tmp, tweets)
       }
       
       
