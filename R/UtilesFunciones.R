@@ -220,16 +220,18 @@ hashtag_extract<- function(texto,characters="#@", excludeRT=TRUE, oldText=NULL, 
 }
 
 
-mention <- function(data, author="author", text="text", ...) {
+mention <- function(data, author="author", text="text", allAuthors=FALSE, ...) {
   q <- sapply(hashtag_extract(data[[text]],"@"),strsplit,"\\|")
   n.obs <- sapply(q, length)
   seq.max <- seq_len(max(n.obs))
   mat <- as.data.frame(t(sapply(q, "[", i = seq.max)))
   if(dim(mat)[1]==1 & dim(mat)[2]!=1) mat <- t(mat)
   rownames(mat) <- c()
+  table <- unique(data.frame(author=data[[author]], name=tolower(iconv(data[[author]],to="ASCII//TRANSLIT"))))
+  rownames(table) <- table$name; table$name <- NULL
   data[[author]] <- tolower(iconv(data[[author]],to="ASCII//TRANSLIT"))
-  data$author <- ifelse(substr(data$author,1,1)=="@", data$author, paste0("@", data$author))
-  authors <- as.data.frame(table(data$author)); names(authors) <- c("name", "tweets")
+  data[[author]] <- ifelse(substr(data[[author]],1,1)=="@", data[[author]], paste0("@", data[[author]]))
+  authors <- as.data.frame(table(data[[author]])); names(authors) <- c("name", "tweets")
   newData <- cbind(data[,author], mat)
   if(length(table(newData$V1))>0) {
     links <- edgeList(newData, procedures = "shape")
@@ -244,12 +246,19 @@ mention <- function(data, author="author", text="text", ...) {
   if(!exists("size", arguments)) arguments$size <- "tweets"
   if(!exists("labelSize", arguments)) arguments$labelSize <- "degree"
   net <- do.call(netCoin, arguments)
-  net$nodes <- merge(net$nodes, authors, all.x=TRUE, all.y=TRUE)
+  net$nodes <- merge(net$nodes, authors, all.x=TRUE, all.y=allAuthors)
   net$nodes$link <- linkTwitter(net$nodes$name)
   net$nodes$tweets <- ifelse(is.na(net$nodes$tweets), 0, net$nodes$tweets)
   if(exists("language",arguments) && arguments$language=="es") type = "tipo" else type = "type"
   net$nodes[[type]] <-ifelse(net$nodes$tweets==0, "only mentioned", "author")
-  net <- netCoin(net, color=type, shape=type)
+  degreeFilter <- ifelse(exists("degreeFilter", arguments), arguments$degreeFilter, 0)
+  net <- netCoin(net, color=type, shape=type, degreeFilter=degreeFilter)
+  targets <- setdiff(net$nodes$name, names(table))
+  tableT  <- data.frame(author=targets, row.names=targets)
+  table   <- rbind(table, tableT)
+  net$nodes$name   <- table[net$nodes$name, "author"]
+  net$links$Source <- table[net$links$Source, "author"]
+  net$links$Target <- table[net$links$Target, "author"]
   return(net)
 }
 
