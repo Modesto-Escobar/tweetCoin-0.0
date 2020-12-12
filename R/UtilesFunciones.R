@@ -227,14 +227,14 @@ mention <- function(data, author="author", text="text", allAuthors=FALSE, ...) {
   mat <- as.data.frame(t(sapply(q, "[", i = seq.max)))
   if(dim(mat)[1]==1 & dim(mat)[2]!=1) mat <- t(mat)
   rownames(mat) <- c()
-  table <- unique(data.frame(author=data[[author]], name=tolower(iconv(data[[author]],to="ASCII//TRANSLIT"))))
+  table <- unique(data.frame(author=data[[author]], name=paste0(tolower(sub("^@","",iconv(data[[author]],to="ASCII//TRANSLIT"))))))
   rownames(table) <- table$name; table$name <- NULL
   data[[author]] <- tolower(iconv(data[[author]],to="ASCII//TRANSLIT"))
-  data[[author]] <- ifelse(substr(data[[author]],1,1)=="@", data[[author]], paste0("@", data[[author]]))
   authors <- as.data.frame(table(data[[author]])); names(authors) <- c("name", "tweets")
   newData <- cbind(data[,author], mat)
   if(length(table(newData$V1))>0) {
     links <- edgeList(newData, procedures = "shape")
+    links$Target <- sub("^@","",links$Target)
     links$X <- 1
     Links <- aggregate( X~Source+Target, data=links, FUN=length)
     arguments <- list(links=Links, lwidth="X", ...)
@@ -321,7 +321,7 @@ retweet <- function(data, sender="author", text="text", language="en", nodes=NUL
 
 
 calCentr <-function(graph, measures=c("degree","wdegree","closeness","betweenness","eigen"), order="") {
-  if (any(measures=="all",  measures=="ALL")) measures <- c("degree","closeness","betweenness","eigen")
+  if (any(measures=="all",  measures=="ALL")) measures <- c("degree", "wdegree", "closeness","betweenness","eigen")
   if (inherits(graph,"netCoin")) graph <- toIgraph(graph)
   m <- tolower(substring(measures,1,1))
   if(is.null(attr(igraph::V(graph),"name"))) igraph::V(graph)$name <- igraph::V(graph)
@@ -372,7 +372,7 @@ type <- function(Profiles, followers="followers", following="following",
   return(Profiles)
 }
 
-sTwitter <- function(original, retweets=NULL, statistics=c("external", "internal", "mentions", "centrality"),
+sTwitter <- function(original, retweets=NULL, statistics=c("external", "internal", "mentions", "centrality", "wcentrality"),
                      id="status_id", author="author") {
   if(!is.null(original)){
     if(!exists(id,    original)) stop(paste0(id, " is not found as id in original."))
@@ -387,6 +387,7 @@ sTwitter <- function(original, retweets=NULL, statistics=c("external", "internal
   external <- internal <- mentions <- centrality <- eigenvalue <- NULL
   statistics <- gsub("^ei","",statistics)
   s <- tolower(substring(statistics,1,1))
+  if(s[1]=="a") s <- c("e","i","m","c","w","g")
   All <- rbind(original, retweets)
   Complete <- aggregate(All[[id]], by=list(profile=All[[author]]), FUN="length")
   names(Complete)[2] <- "issues"
@@ -407,6 +408,7 @@ sTwitter <- function(original, retweets=NULL, statistics=c("external", "internal
     Men <-  aggregate(A$links[["X"]], by=list(profile=A$links$Target), FUN="sum")
     names(Men)[2] <- "mentioned"
     Complete <- merge(Complete, Men, all.x=TRUE)
+    Complete[is.na(Complete)] <- 0
     mentions   <- c("profilesm", "mentioned")
   }
   
@@ -447,7 +449,7 @@ sTwitter <- function(original, retweets=NULL, statistics=c("external", "internal
     names(Eigen$nodes)[1] <- "profile"
     Complete <- merge(Complete, Eigen$nodes, all.x=TRUE, incomparables=0)
     Complete[is.na(Complete)] <- 0
-    eigenvalue <- "eigenvalue"
+    eigenvalue <- "eigen"
   }
   
   fields <- c("profile", external, "issues", internal, mentions, centrality, eigenvalue)
