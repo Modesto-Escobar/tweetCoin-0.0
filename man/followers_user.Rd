@@ -1,11 +1,11 @@
-\name{follow_tweet}
-\alias{follow_tweet}
+\name{followers_user}
+\alias{followers_user}
 \title{Get user IDs for Twitter accounts following an user}
 \description{
 Returns a list of user IDs for the accounts following specified user. 
 }
 \usage{
-follow_tweet(user, page = "-1", 
+followers_user(user, page = "-1", 
                     retryonratelimit = TRUE, 
                     parse = TRUE, verbose = TRUE, 
                     token = NULL)
@@ -32,5 +32,6 @@ Jose L.A. Berrocal,  University of Salamanca. See \url{http://berrocal.usal.es/}
 }
 \examples{
 ## 
-#a <- follow_tweet("jack")
+#a <- followers_user("jack")
+##
 }

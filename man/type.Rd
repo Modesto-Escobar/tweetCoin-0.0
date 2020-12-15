@@ -53,7 +53,6 @@ Modesto Escobar, Department of Sociology and Communication, University of Salama
 ## This example uses a sample of original tweets 
 ## using the hashtag #cuentalo:
 data(users)
-
 R <- type(users)
 table(R$type)
 }

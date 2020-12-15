@@ -13,7 +13,7 @@ load_tweets(name, type = c("user","search","stream"), format = c("binary","delim
   \item{format}{Format of the file, "binary" for binary format (.dat), "delimited" for delimited text file (.csv).}
 }
 \details{
-Use type = "timeline" when using \code{\link[tweetCoin]{user_tweet}} function (tweets and information from concrete users), type = "streaming" when using \code{\link[tweetCoin]{search_tweet}} function (tweets containing a specific word or set of words) and use "search" when using \code{\link[tweetCoin]{stream_tweet}} function (for a live stream recollection of Twitter data). See examples.
+Use type = "user" when using \code{\link[tweetCoin]{user_tweet}} function (tweets and information from concrete users), type = "search" when using \code{\link[tweetCoin]{search_tweet}} function (tweets containing a specific word or set of words) and use "stream" when using \code{\link[tweetCoin]{stream_tweet}} function (for a live stream recollection of Twitter data). See examples.
 }
 \value{
 A data frame of Twitter data.

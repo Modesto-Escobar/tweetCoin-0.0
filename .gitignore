@@ -4,3 +4,5 @@
 .Ruserdata
 tweetCoin-0.0.Rproj
 tweetCoin-0.0_Modesto.Rproj
+.DS_Store
+data/.DS_Store
