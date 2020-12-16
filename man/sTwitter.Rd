@@ -5,8 +5,9 @@
 This function produces some of the basic statistics that can be extracted from a Twitter network, including the number of followers and following, mentions, etc.
 }
 \usage{
-sTwitter(original, retweets=NULL, statistics=c("external", "internal", "mentions", "centrality"),
-                     id="status_id", author="author")
+sTwitter(original, retweets=NULL, 
+        statistics=c("external", "internal", "mentions", "centrality"),
+        id="status_id", author="author")
 }
 \arguments{
   \item{original}{A data frame with at least one vector of names.}
@@ -28,6 +29,7 @@ This function creates a netCoin object, which can be ploted with the plot() func
 Modesto Escobar, Department of Sociology and Communication, University of Salamanca. See \url{https://sociocav.usal.es/blog/modesto-escobar/}
 }
 \examples{
+## Not run:
 ## This example uses a sample of original tweets using 
 ## the hashtag #cuentalo:
 data(cuentalo)
@@ -35,5 +37,5 @@ data(cuentalo)
 ## Once you have your data, you can produce the statistics:
 A<- sTwitter(cuentalo)
 
-##
+## End(Not run)
 }

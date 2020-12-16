@@ -5,8 +5,11 @@
 This function downloads the tweets from a given set of Twitter profiles.
 }
 \usage{
-crawl_tweets(file = "users.txt", maxtweets = 100, home = FALSE, parse = TRUE, check = TRUE, token = NULL, 
-             include_rts = FALSE, output_file_name = NULL, format = c("binary", "delimited"))
+crawl_tweets(file = "users.txt", maxtweets = 100, 
+             home = FALSE, parse = TRUE, check = TRUE, 
+             token = NULL, include_rts = FALSE,
+             output_file_name = NULL, 
+             format = c("binary", "delimited"))
 }
 \arguments{
   \item{file}{A .txt file containing the names of the Twitter users.}
