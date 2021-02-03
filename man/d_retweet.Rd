@@ -35,7 +35,7 @@ This function produces a dynamic netCoin network that allows to recreate the tim
 \value{
 This function creates a list containing three objects: "authors" (a data.frame containing names, links, Tweets and Mentions), "messages" (a data.frame containing dates, authors and texts) and "nets", (a set of \code{\link[netCoin]{netCoin}} objects). 
 
-This set of netCoin objects can be ploted with netCoin's \code{\link[netCoin]{multigraphCreate}} function, creating a folder in the computer with an HTML document named index.html which contains the produced graph(s). This file can be directly opened with your browser and sent to a web server to work properly.
+This set of netCoin objects can be ploted with netCoin's \code{\link[rD3plot]{multigraphCreate}} function, creating a folder in the computer with an HTML document named index.html which contains the produced graph(s). This file can be directly opened with your browser and sent to a web server to work properly.
 }
 \author{
 Modesto Escobar, Department of Sociology and Communication, University of Salamanca. See \url{https://sociocav.usal.es/blog/modesto-escobar/}
