@@ -57,7 +57,7 @@ searchWiki <- function(name, language=c("en", "es", "fr", "it", "de", "pt", "ca"
     errores[I,language] <- rep(FALSE, length(language))
     for (L in language){
       person <- gsub(" ", "_", I)
-      url <-URLencode(iconv(paste("https://",L,".wikipedia.org/wiki/",person,sep=""),to="UTF-8"))
+      url <-URLencode(paste("https://",L,".wikipedia.org/wiki/",person,sep=""))
       if (valid_url(url)) {
         errores[I,L] <- TRUE
         if (!all) break
@@ -587,13 +587,14 @@ d_mention <-function(Tweets, author="author", text="text", date="date", imagedir
     names(tt) <- c("name","tweets")
     
     ncoin[[i]] <- mention(Messages[Messages[[date]]<=serie[i],c(author, text)])
-    if(is.null(ncoin[[i]]$links)) {
+    if(!is.data.frame(ncoin[[i]]$links)) {
       ncoin[[i]] <- NULL
       next
     }
-    t.out <- as.data.frame(xtabs(X~Source, ncoin[[i]]$links)); names(t.out) <-c("name", "mentions")
-    t.in  <- as.data.frame(xtabs(X~Target,data=ncoin[[i]]$links)); names(t.in)  <-c("name", "mentioned")
 
+    t.out <- as.data.frame(xtabs(X~Source,data=ncoin[[i]]$links)); names(t.out) <-c("name", "mentions")
+    t.in  <- as.data.frame(xtabs(X~Target,data=ncoin[[i]]$links)); names(t.in)  <-c("name", "mentioned")
+ 
     graph <- toIgraph(ncoin[[i]])
     
     community <- membership(cluster_walktrap(graph))

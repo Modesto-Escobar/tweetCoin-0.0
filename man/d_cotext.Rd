@@ -43,7 +43,7 @@ Modesto Escobar, Department of Sociology and Communication, University of Salama
 ## the hashtag #Shakespeare:
 
 data(Shakespeare)
-search_tweets_Shakespeare$elements <- hashtag_extract(search_tweets_Shakespeare$text)
+Shakespeare$elements <- hashtag_extract(Shakespeare$text)
 n <- d_cotext(data=Shakespeare, text="elements", sep="|", 
               date= "date", support= 10, interval = 3600 * 24)
               
