@@ -314,6 +314,7 @@ retweet <- function(data, sender="author", text="text", language="en", nodes=NUL
   names(Nodes) <- ifelse(language=="es","nombre", ifelse(language=="ca", "nome", "name"))
   if (!is.null(nodes)) Nodes <- merge(Nodes, nodes, all.x=T, by=names(Nodes), sort=FALSE)
   arguments <- list(nodes=Nodes, links=Links, language=language, ...)
+  if(!exists("showArrows", arguments)) arguments$showArrows <- TRUE
   netCoin <- do.call(netCoin, arguments)
   return(netCoin)
 }
