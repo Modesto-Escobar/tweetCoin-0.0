@@ -265,10 +265,10 @@ mention <- function(data, author="author", text="text", allAuthors=FALSE, ...) {
 
 cotweet <- function(data, text="text", searchers="@#", original= TRUE, excludeRT=TRUE, min=1, others=NULL, oldText=NULL, newText=NULL, ...) {
   arguments <- list(...)
-  if(!exists("minimum", arguments)) minimum=1
-  if(!exists("minL", arguments)) minL=1
-  if(!exists("procedures", arguments)) procedures="frequencies"
-  if(!exists("criteria", arguments)) criteria="frequencies"
+  if(!exists("minimum", arguments))    minimum=1 else minimum <- arguments$minimum; arguments$minimum <- NULL
+  if(!exists("minL", arguments))       minL=1    else minL    <- arguments$minL; arguments$minL <- NULL
+  if(!exists("procedures", arguments)) procedures="frequencies" else procedures <- arguments$procedures; arguments$procedures <- NULL
+  if(!exists("criteria", arguments))   criteria="frequencies" else criteria <- arguments$criteria; arguments$criteria <- NULL
   X <- data[[text]]
   if (!original) X <- X[grepl("^RT @.*:", X)]
   D <- data.frame(Text=hashtag_extract(X, searchers, excludeRT, oldText, newText))
@@ -531,7 +531,7 @@ d_mention <-function(Tweets, author="author", text="text", date="date", imagedir
   
   
   Authors$Degree   <- strength(Graph)
-  Authors$label    <- ifelse(Authors$Degree>minlabel, as.character(Authors$name), "")
+  Authors$label    <- ifelse(Authors$Degree>minlabel, as.character(Authors$name), " ")
   Authors$size     <- ifelse(Authors$Degree>2, Authors$Degree, 0)
   if(exists("TT")) {
     Authors<- merge(Authors, TT, by="name", all.x=TRUE)
@@ -637,6 +637,11 @@ d_cotweet <-function(Tweets, author="author", text="text", date="date",
   
   arguments <- list(...)
   
+  if(!exists("minimum", arguments))    minimum=1 else minimum <- arguments$minimum; arguments$minimum <- NULL
+  if(!exists("minL", arguments))       minL=1    else minL    <- arguments$minL; arguments$minL <- NULL
+  if(!exists("procedures", arguments)) procedures="frequencies" else procedures <- arguments$procedures; arguments$procedures <- NULL
+  if(!exists("criteria", arguments))   criteria="frequencies" else criteria <- arguments$criteria; arguments$criteria <- NULL
+  
   if(!exists("label",      arguments)) arguments$label <- "name"
   if(!exists("size",       arguments)) arguments$size <- "Retweeted"
   if(!exists("labelSize",  arguments)) arguments$labelSize <- "size"
@@ -679,7 +684,7 @@ d_cotweet <-function(Tweets, author="author", text="text", date="date",
   }
   
   
-  netCoTweet <- cotweet(Messages, searchers=searchers)
+  netCoTweet <- cotweet(Messages, searchers=searchers, procedures=procedures, criteria=criteria, minimum=minimum, minL=minL)
   # T.out <- as.data.frame(xtabs(X~Source,data=netCoTweet$links)); names(T.out) <- c("name","Mentions")
   # T.in <-  as.data.frame(xtabs(X~Target,data=netCoTweet$links)); names(T.in) <- c("name","Mentioned")
   Graph <- toIgraph(netCoTweet)
@@ -695,7 +700,7 @@ d_cotweet <-function(Tweets, author="author", text="text", date="date",
   Authors$Walktrap =ifelse(Authors$Walktrap %in% highGroups,Authors$Walktrap,"Rest")
   
     Authors$Degree   <- strength(Graph)
-  Authors$label    <- ifelse(Authors$Degree>minlabel, as.character(Authors$name), "")
+  Authors$label    <- ifelse(Authors$Degree>minlabel, as.character(Authors$name), " ")
   Authors$size     <- ifelse(Authors$Degree>2, Authors$Degree, 0)
   if(!is.null(fields)) Authors <- merge(Authors, Fields, by="name", all.x=TRUE)
   Authors$link <- linkTwitter(Authors$name)
@@ -747,7 +752,7 @@ d_cotweet <-function(Tweets, author="author", text="text", date="date",
     names(tt) <- c("name","tweets")
     
     if(count < length(serie)) {
-      ncoin[[i]] <- cotweet(Tweets[Tweets[[date]]<=serie[i],c(author, text)], searchers=searchers)
+      ncoin[[i]] <- cotweet(Messages[Messages[[date]]<=serie[i],c(author, text)], searchers=searchers)
       # t.out <- as.data.frame(xtabs(X~Source, ncoin[[i]]$links)); names(t.out) <-c("name", "mentions")
       # t.in  <- as.data.frame(xtabs(X~Target,data=ncoin[[i]]$links)); names(t.in)  <-c("name", "mentioned")
       graph <- toIgraph(ncoin[[i]])
@@ -990,7 +995,7 @@ d_retweet <-function(Tweets, author="author", text="text", date="date",
   Authors$Retweets  <- strength(Graph, mode="out")
   Authors$Retweeted <- strength(Graph, mode="in")
   Authors$Degree   <- strength(Graph)
-  Authors$label    <- ifelse(Authors$Degree>minlabel, as.character(Authors$name), "")
+  Authors$label    <- ifelse(Authors$Degree>minlabel, as.character(Authors$name), " ")
   Authors$size     <- ifelse(Authors$Degree>2, Authors$Degree, 0)
   Authors          <- merge(Authors, AuthorsT, by="name", all.x=TRUE)
   if(exists("TT")) {
