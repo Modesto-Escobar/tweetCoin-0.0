@@ -45,5 +45,5 @@ B <- "RT @DisneysMulan: Just finished #Mulan #movie!"
 hashtag_extract(B, characters = "#@", excludeRT = TRUE, oldText = "#|@", newText = "")
 
 ## It is possible to use this argument to change the separator of the outcomes:
-hashtag_extract(B, characters = "#@", oldText = "\\|", newText = ";")
+#hashtag_extract(B, characters = "#@", oldText = "\\|", newText = ";")
 }

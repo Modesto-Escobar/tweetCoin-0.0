@@ -42,7 +42,7 @@ A cleaner data.frame with only the selected variables with a format legible by \
 Modesto Escobar, Department of Sociology and Communication, University of Salamanca. See \url{https://sociocav.usal.es/blog/modesto-escobar/}
 }
 \examples{
-## Not run: 
+\dontrun{ 
 
 ## Extracting tweets using the hastag #sociology as an example:
 # search_tweet("#sociology", maxtweets= 100)
@@ -57,5 +57,5 @@ Modesto Escobar, Department of Sociology and Communication, University of Salama
 #       original = TRUE, quote = FALSE, 
 #       retweet = FALSE)
 
-## End(Not run)
+}
 }

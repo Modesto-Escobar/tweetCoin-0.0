@@ -13,6 +13,7 @@ d_cotext(data, text = "text", sep =" ", min = 1, date = "date",
 \arguments{
   \item{data}{A data frame with at least one vector of names.}
   \item{text}{Vector name from data containing the messages (tweets).}
+  \item{sep}{vector of characters used to divide columns with multiple events. If this separator is "", every unique cell of every column is converted into a dichotomus data frame's column.}
   \item{min}{Minimum number of ocurrences of the text to be include in the graph, default = 1.}
   \item{date}{Vector from data containing the date when the text was written.}
   \item{beginDate}{Date of first available message.}
@@ -33,7 +34,7 @@ Any \code{\link[netCoin]{netCoin}} and/or \code{\link[netCoin]{allNet}} argument
 }
 
 \value{
-This function creates a multigraph object (several graphs through time), which can be ploted with the plot() function, creating a folder in the computer with an HTML file named index.html which contains the produced graph. This file can be directly opened with your browser and sent to a web server to work properly.
+This function creates a multigraph object (several graphs through time), which can be plotted with the plot() function, creating a folder in the computer with an HTML file named index.html which contains the produced graph. This file can be directly opened with your browser and sent to a web server to work properly.
 }
 \author{
 Modesto Escobar, Department of Sociology and Communication, University of Salamanca. See \url{https://sociocav.usal.es/blog/modesto-escobar/}

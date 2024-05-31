@@ -35,9 +35,11 @@ A .csv or .dat file with users data attributes.
 Jose L.A. Berrocal,  University of Salamanca. See \url{http://berrocal.usal.es/}
 }
 \examples{
-## Not run:
-## The function followers_user returns a list of user IDs for the accounts following specified user. 
-## Set your directory and run this code to retrieve the user IDs of those who follow your desired user.
+\dontrun{
+# The function followers_user returns a list of user IDs for the accounts
+# following specified user.
+# Set your directory and run this code to retrieve the user IDs of those who
+# follow your desired user.
 A <- followers_user("jack", page = "-1", 
                     retryonratelimit = TRUE, 
                     parse = TRUE, verbose = TRUE, 
@@ -46,9 +48,11 @@ A <- followers_user("jack", page = "-1",
 userid <- A$user_id
 write.table(userid, file = "users.txt")
 
-## Once you have the user IDs in a .txt file, you can run this function to retrieve tweets from the given profiles.
-B <- crawl_tweets(file = "users.txt", maxtweets = 100, home = FALSE, parse = TRUE, check = TRUE, token = NULL, 
-             include_rts = FALSE, output_file_name = NULL, format = "binary")
-
-## End (Not run)
+# Once you have the user IDs in a .txt file, you can run this function to
+# retrieve tweets from the given profiles.
+B <- crawl_tweets(file = "users.txt", maxtweets = 100, home = FALSE,
+                  parse = TRUE, check = TRUE, token = NULL,
+                  include_rts = FALSE, output_file_name = NULL,
+                  format = "binary")
+}
 }

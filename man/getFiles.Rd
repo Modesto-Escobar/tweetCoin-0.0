@@ -28,7 +28,7 @@ It returns a vector of errors, if any. All pictures are download into the select
 Modesto Escobar, Department of Sociology and Communication, University of Salamanca. See \url{https://sociocav.usal.es/blog/modesto-escobar/}
 }
 \examples{
-## Not run: 
+\dontrun{
 
 ## In case you want to download a file directly from an URL:
 
@@ -50,5 +50,5 @@ Modesto Escobar, Department of Sociology and Communication, University of Salama
 # data$url <- as.character( paste( data$url))
 # getFiles(data, path = "./", ext = NULL)
 
-## End(Not run)
+}
 }

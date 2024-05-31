@@ -37,7 +37,8 @@ t <- cotext(data = Shakespeare, text = "elements", sep="|", min = 15)
 ## You can include all type of arguments from netCoin 
 ## and/or allNet:
 
-t2 <- netCoin(t, size = "degree",
+library(netCoin)
+t2 <- addNetCoin(t, size = "degree",
       zoom = .9, repulsion = 32, 
      distance= 18)
 

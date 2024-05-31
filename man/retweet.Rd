@@ -36,7 +36,8 @@ r <- retweet( Shakespeare, "author", "text")
 ## You can add all kinds of netCoin and/or 
 ## allNet arguments:
 
-r2 <- netCoin(r, size = "degree", distance = 15, 
+library(netCoin)
+r2 <- addNetCoin(r, size = "degree", distance = 15, 
                repulsion = 25, zoom = .2, 
                main= "Graph of retweets using #Shakespeare")
 }

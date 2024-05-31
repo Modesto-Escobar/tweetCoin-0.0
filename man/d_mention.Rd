@@ -38,9 +38,9 @@ This function works using netCoin package "dichotomize" function. Is intented to
 Any \code{\link[netCoin]{netCoin}} and/or \code{\link[netCoin]{allNet}} argument can be used in order to specify the network produced. 
 }
 \value{
-This function creates a dyntweets object, containing three things: "authors" (a data.frame containing names, links, Tweets and Mentions), "messages" (a data.frame containing dates, authors and texts) and "nets", (a set of \code{\link[netCoin]{netCoin}} objects). 
+This function creates a list containing three objects: "authors" (a data.frame containing names, links, Tweets and Mentions), "messages" (a data.frame containing dates, authors and texts) and "nets", (a \code{\link[netCoin]{multigraphCreate}} object).
 
-This set of netCoin objects can be ploted with netCoin's \code{\link[rD3plot]{multigraphCreate}} function, creating a folder in the computer with an HTML document named index.html which contains the produced graph(s). This file can be directly opened with your browser and sent to a web server to work properly.
+This object can be plotted with the plot() function, creating a folder in the computer with an HTML document named index.html which contains the produced graph(s). This file can be directly opened with your browser and sent to a web server to work properly.
 }
 \author{
 Modesto Escobar, Department of Sociology and Communication, University of Salamanca. See \url{https://sociocav.usal.es/blog/modesto-escobar/}

@@ -5,12 +5,13 @@
 This function produces an interactive netCoin network from a data frame or matrix of tweets conecting authors and mentions (@).
 }
 \usage{
-mention(data, author = "author", text = "text", ...)
+mention(data, author="author", text="text", allAuthors=FALSE, ...)
 }
 \arguments{
   \item{data}{A matrix or data.frame of tweets and users.}
   \item{author}{Vector name from data containing the profiles (users' names).}
   \item{text}{Vector name from data containing the messages (tweets).}
+  \item{allAuthors}{Should keep all authors? Default: FALSE.}
   \item{...}{Any \code{\link[netCoin]{netCoin}} and/or \code{\link[netCoin]{allNet}} argument.}
 }
 \details{
@@ -34,6 +35,7 @@ m <- mention(Shakespeare, "author", "text")
 ## You can include all type of arguments from netCoin 
 ## and/or allNet And visualize the correspondent graph:
 
-m2<- netCoin(m, size = "degree", distance = 12.8, 
+library(netCoin)
+m2<- addNetCoin(m, size = "degree", distance = 12.8, 
             repulsion = 9.08, zoom = .42, main= "Mention graph of #Shakespeare")
 }

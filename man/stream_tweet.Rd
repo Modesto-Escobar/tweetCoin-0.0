@@ -46,43 +46,43 @@ Tweets data returned as data.frame with users data as attribute.
 Jose L.A. Berrocal,  University of Salamanca. See \url{http://berrocal.usal.es/}.
 }
 \examples{
-## Not run:
-## Export twitter credentials:
-# token<- credentials("credentials.txt")
+\dontrun{
+# Export twitter credentials:
+token <- credentials("credentials.txt")
 
-## Example extracting a random sample of tweets for 30 seconds:
-# stream_tweet(search = "", timeout = 30,
-#               output_file_name = "sample", format= "delimited")
+# Example extracting a random sample of tweets for 30 seconds:
+stream_tweet(search = "", timeout = 30,
+               output_file_name = "sample", format= "delimited")
                 
-## Export data using load_tweets() function:             
-# sample <- load_tweets("sample", "stream", "delimited")                
+# Export data using load_tweets() function:             
+sample <- load_tweets("sample", "stream", "delimited")                
                 
 
-## Example streaming tweets using the hashtag #datascience as keyword for 90 seconds:
-# stream_tweet("datascience", timeout = 90,
-#              output_file_name = "datascience", format= "delimited")
+# Example streaming tweets using the hashtag #datascience as keyword for 90 seconds:
+stream_tweet("datascience", timeout = 90,
+              output_file_name = "datascience", format= "delimited")
                 
-## Export the data frame and plot netCoin graph of mentions and hashtags (if needed): 
-# datascience <- load_tweets(name = "datascience", 
+# Export the data frame and plot netCoin graph of mentions and hashtags (if needed): 
+datascience <- load_tweets(name = "datascience", 
                       type = "stream", format= "delimited")
-# plot(cotweet(datascience))
+plot(cotweet(datascience))
 
-## Example streaming tweets by user (@BBCWorld) for 5 minutes: 
-## (Warning! It's possible that they don't tweet anything during that time!)
+# Example streaming tweets by user (@BBCWorld) for 5 minutes: 
+# (Warning! It's possible that they don't tweet anything during that time!)
 
-# token<- credentials("credentials.txt")
-# userid<-lookup_users("BBCWorld", parse = TRUE, token = token)$user_id
+token <- credentials("credentials.txt")
+userid <- lookup_users("BBCWorld", parse = TRUE, token = token)$user_id
 
-# stream_tweet(userid, timeout = 60*5, output_file_name= "BBCWorld", format= "binary")
+stream_tweet(userid, timeout = 60*5, output_file_name= "BBCWorld", format= "binary")
 
-## Export data:
-# BBCWorld <- load_tweets("BBCWorld", "stream", format= "binary")
+# Export data:
+BBCWorld <- load_tweets("BBCWorld", "stream", format= "binary")
 
-## Example streaming by geo coordinates for 60 seconds:
-# stream_tweet(search = c(-125, 26, -65, 49), timeout = 60, output_file_name = "geotweets", format= "delimited")
+# Example streaming by geo coordinates for 60 seconds:
+stream_tweet(search = c(-125, 26, -65, 49), timeout = 60,
+               output_file_name = "geotweets", format= "delimited")
 
-## Export data:
-
-# geotweets<- load_tweets("geotweets", "stream", format= "delimited")
-## End (Not run)
+# Export data:
+geotweets <- load_tweets("geotweets", "stream", format= "delimited")
+}
 }

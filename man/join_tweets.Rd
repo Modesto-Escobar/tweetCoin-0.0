@@ -6,7 +6,7 @@ This function joins two or more datasets containing tweets obtained through the 
 }
 \usage{
 join_tweets(names, type = c("user", "search", "stream"), 
-            format = c("binary","delimited")
+            format = c("binary","delimited"))
 }
 \arguments{
    \item{names}{Names of the files containing the data.}
@@ -24,7 +24,7 @@ A data frame of Twitter data.
 Jose L.A. Berrocal,  University of Salamanca. See \url{http://berrocal.usal.es/}.
 }
 \examples{
-## Not run: 
+\dontrun{
 
 ## This function is useful when you have several 
 ## datasets with the same query, as for example:
@@ -36,5 +36,5 @@ search_tweet(search = "rstats", maxtweets = 50, format = "binary")
 names <- c("stats", "rstats")
 A<- join_tweets(names = names, type = "search", format = "binary")
 
-## End(Not run)
+}
 }

@@ -11,7 +11,7 @@ urltoInfo(url)
   \item{url}{Character vector of URLs.}
 }
 \details{
-This function converts an available Wikipedia URL direction to the corresponding HTML iframe, i.e., \url{"https://es.wikipedia.org/wiki/Socrates"} changes into "<iframe src=\"https://es.wikipedia.org/wiki/Socrates\" width=\"100(...)"."
+This function converts an available Wikipedia URL direction to the corresponding HTML iframe, i.e., \url{https://es.wikipedia.org/wiki/Socrates} changes into "<iframe src=\"https://es.wikipedia.org/wiki/Socrates\" width=\"100(...)".
 }
 \value{
 A character vector of names' iframe links.

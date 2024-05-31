@@ -252,7 +252,7 @@ mention <- function(data, author="author", text="text", allAuthors=FALSE, ...) {
   if(exists("language",arguments) && arguments$language=="es") type = "tipo" else type = "type"
   net$nodes[[type]] <-ifelse(net$nodes$tweets==0, "only mentioned", "author")
   degreeFilter <- ifelse(exists("degreeFilter", arguments), arguments$degreeFilter, 0)
-  net <- netCoin(net, color=type, shape=type, degreeFilter=degreeFilter)
+  net <- addNetCoin(net, color=type, shape=type, degreeFilter=degreeFilter)
   targets <- setdiff(net$nodes$name, names(table))
   tableT  <- data.frame(author=targets, row.names=targets)
   table   <- rbind(table, tableT)
@@ -281,8 +281,8 @@ cotweet <- function(data, text="text", searchers="@#", original= TRUE, excludeRT
   if (!exists("community", arguments)) arguments$community <- "Walktrap"
   if (!exists("color", arguments)) arguments$color  <- "community"
   if (!exists("shape", arguments) & grepl("(@#)|(#@)", searchers)) arguments$shape="type"
-  arguments$nodes  <- graph
-  do.call(netCoin, arguments)
+  arguments$x  <- graph
+  do.call(addNetCoin, arguments)
 }
 
 cotext <- function(data, text="text", sep=" ", min=1, ...) {
@@ -297,8 +297,8 @@ cotext <- function(data, text="text", sep=" ", min=1, ...) {
   graph <- allNet(incidences, procedures=procedures, criteria=criteria, minimum=minimum, minL=minL, maxL=maxL, support=support)
   if (!exists("community", arguments)) arguments$community <- "Walktrap"
   if (!exists("color", arguments)) arguments$color  <- "community"
-  arguments$nodes  <- graph
-  do.call(netCoin, arguments)
+  arguments$x  <- graph
+  do.call(addNetCoin, arguments)
 }
 
 
@@ -315,8 +315,8 @@ retweet <- function(data, sender="author", text="text", language="en", nodes=NUL
   if (!is.null(nodes)) Nodes <- merge(Nodes, nodes, all.x=T, by=names(Nodes), sort=FALSE)
   arguments <- list(nodes=Nodes, links=Links, language=language, ...)
   if(!exists("showArrows", arguments)) arguments$showArrows <- TRUE
-  netCoin <- do.call(netCoin, arguments)
-  return(netCoin)
+  net <- do.call(netCoin, arguments)
+  return(net)
 }
 
 
@@ -615,8 +615,8 @@ d_mention <-function(Tweets, author="author", text="text", date="date", imagedir
                       "Walktrap", "walktrap", "size", "label")]
     
     ncoin[[i]]$nodes <- nodes
-    arguments$nodes <- ncoin[[i]]
-    ncoin[[i]] <- do.call(netCoin, arguments)
+    arguments$x <- ncoin[[i]]
+    ncoin[[i]] <- do.call(addNetCoin, arguments)
   }
   ncoin[["mode"]] <- "frame"
   if(exists("directory")) ncoin[["dir"]] <- directory
@@ -625,7 +625,7 @@ d_mention <-function(Tweets, author="author", text="text", date="date", imagedir
   
   # lista <- list("Set-up"= T2-T1, "Sample"= T3-T2, "Red"= T4-T3, 
   #              "Statistics"= T5-T4, "Loop"= T6-T5, "multigraph"= T7-T6, "Total"= T7-T1) # To check Sys.time() Add list to all <-
-  Frames <- structure(ncoin, class="multigraph")
+  Frames <- do.call(multigraphCreate, ncoin)
   all <- structure(list(authors= Authors, messages= Messages, nets = Frames), class="dyntweets")
   return(all)
 }
@@ -776,8 +776,8 @@ d_cotweet <-function(Tweets, author="author", text="text", date="date",
                       "Walktrap", "walktrap", "size", "label")]
     
     ncoin[[i]]$nodes <- merge(ncoin[[i]]$nodes, nodes, by="name")
-    arguments$nodes <- ncoin[[i]]
-    ncoin[[i]] <- do.call(netCoin, arguments)
+    arguments$x <- ncoin[[i]]
+    ncoin[[i]] <- do.call(addNetCoin, arguments)
   }
   
   ncoin[["mode"]] <- "frame"
@@ -787,7 +787,7 @@ d_cotweet <-function(Tweets, author="author", text="text", date="date",
   
   # lista <- list("Set-up"= T2-T1, "Sample"= T3-T2, "Red"= T4-T3, 
   #              "Statistics"= T5-T4, "Loop"= T6-T5, "multigraph"= T7-T6, "Total"= T7-T1) # To check Sys.time() Add list to all <-
-  Frames <- structure(ncoin, class="multigraph")
+  Frames <- do.call(multigraphCreate, ncoin)
   all <- structure(list(authors= Authors, messages= Messages, nets = Frames), class="dyntweets")
   return(all)
 }
@@ -831,8 +831,8 @@ d_cotext <-function(data, text="text", sep=" ", min=1, date="date",
   incidences <- dichotomize(data, text, sep=sep, add=F, min=min, nas="None")
   graph <- allNet(incidences, procedures=procedures, criteria=criteria, minimum=minimum, minL=minL, maxL=maxL, support=support,
                   community=community, color=color)
-  arguments$nodes <- graph
-  graph <- do.call(netCoin, arguments)
+  arguments$x <- graph
+  graph <- do.call(addNetCoin, arguments)
   tnodes <- graph$nodes
   names(tnodes) <-sub("%","Acum-%",names(tnodes))
   names(tnodes) <-sub("community",community,names(tnodes))
@@ -874,8 +874,8 @@ d_cotext <-function(data, text="text", sep=" ", min=1, date="date",
       ncoin[[i]] <- allNet(incs, procedures=procedures, criteria=criteria, minimum=minimum, minL=minL, maxL=maxL, support=support,
                          community=community, color=color)
       ncoin[[i]]$nodes <- merge(ncoin[[i]]$nodes, tnodes)
-      arguments$nodes <- ncoin[[i]]
-      ncoin[[i]] <- do.call(netCoin, arguments)
+      arguments$x <- ncoin[[i]]
+      ncoin[[i]] <- do.call(addNetCoin, arguments)
     }
     else {
       ncoin[[i]] <- graph
@@ -892,7 +892,7 @@ d_cotext <-function(data, text="text", sep=" ", min=1, date="date",
   
   # lista <- list("Set-up"= T2-T1, "Sample"= T3-T2, "Red"= T4-T3, 
   #              "Statistics"= T5-T4, "Loop"= T6-T5, "multigraph"= T7-T6, "Total"= T7-T1) # To check Sys.time() Add list to all <-
-  all <- structure(ncoin, class="multigraph")
+  all <- do.call(multigraphCreate, ncoin)
   return(all)
 }
 
@@ -958,10 +958,10 @@ d_retweet <-function(Tweets, author="author", text="text", date="date",
   SRTweets$message <- sub(".*?:[ ](.*)","\\1",SRTweets$text)
   SRTweets <- SRTweets[,c("Source", "Target", "message", "Date")]
   
-  PRetweets <- base::setdiff(SRTweets[, c("message","Date","Source", "Target")], RetweetsN) 
+  PRetweets <- as.data.frame(base::setdiff(SRTweets[, c("message","Date","Source", "Target")], RetweetsN))
   
   #T3 <- Sys.time()
-  
+
   Links <- PRetweets[order(PRetweets$Date),c("Source", "Target", "Date")]
   
   
@@ -1068,8 +1068,8 @@ d_retweet <-function(Tweets, author="author", text="text", date="date",
     graph <- delete_edge_attr(graph, "weight")
     ncoin[[i]] <- fromIgraph(graph)
     ncoin[[i]]$nodes <- merge(ncoin[[i]]$nodes, nodes, by="name")
-    arguments$nodes <- ncoin[[i]]
-    ncoin[[i]] <- do.call(netCoin, arguments)
+    arguments$x <- ncoin[[i]]
+    ncoin[[i]] <- do.call(addNetCoin, arguments)
   }
   
   ncoin[["mode"]] <- "frame"
@@ -1079,19 +1079,13 @@ d_retweet <-function(Tweets, author="author", text="text", date="date",
   
   # lista <- list("Set-up"= T2-T1, "Sample"= T3-T2, "Red"= T4-T3, 
   #              "Statistics"= T5-T4, "Loop"= T6-T5, "multigraph"= T7-T6, "Total"= T7-T1) # To check Sys.time() Add list to all <-
-  Frames <- structure(ncoin, class="multigraph")
+  Frames <- do.call(multigraphCreate, ncoin)
   all <- structure(list(authors= Authors, messages= Messages, Retweets= RetweetsC, retweets= PRetweets, nets =Frames), class="dyntweets")
   return(all)
 }
 
-plot.multigraph <- function(multigraph, dir=NULL) {
-  if(!is.null(dir)) multigraph$dir <- dir
-  do.call(multigraphCreate, multigraph)
-}
-
-plot.dyntweets <- function(dyntweets, dir=NULL) {
-  if(!is.null(dir)) dyntweets$nets$dir <- dir
-  do.call(multigraphCreate, dyntweets$nets)
+plot.dyntweets <- function(x, ...) {
+  plot(x$nets, ...)
 }
 
 toRetweets <- function(tweets, author="author", target="target", date="date", text="text", fields=NULL) {

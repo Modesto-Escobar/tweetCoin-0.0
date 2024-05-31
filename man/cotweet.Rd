@@ -45,7 +45,8 @@ c <- cotweet(Shakespeare,"text", min = 5, excludeRT = TRUE)
 ## You can include all type of arguments from netCoin 
 ## and/or allNet:
 
-c2 <- netCoin(c, size = "degree", distance = 11.18, 
+library(netCoin)
+c2 <- addNetCoin(c, size = "degree", distance = 11.18, 
             repulsion = 20.8, zoom = .7, 
             color = "community", shape = "type",
             main= "Graph of authors and hashtags sharing #Shakespeare:")

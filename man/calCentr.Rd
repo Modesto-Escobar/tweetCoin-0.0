@@ -5,10 +5,12 @@
 This function explores and catalogues a network.
 }
 \usage{
-calCentr(graph, measures=c("degree","wdegree","closeness","betweenness","eigen"), order="")
+calCentr(graph,
+         measures = c("degree","wdegree","closeness","betweenness","eigen"),
+         order = "")
 }
 \arguments{
-  \item{graph}{A \code{\link[tweetCoin]{tweetCoin}} network graph or a \code{\link[netCoin]{netCoin}} object.}
+  \item{graph}{An igraph graph object or a \code{\link[netCoin]{netCoin}} object.}
   \item{measures}{Character vector of the measures to be calculated (See details).}
   \item{order}{Sort the data.frame by the different measures.}
 }
@@ -33,6 +35,7 @@ This function creates a list containing two elements: 1) a data.frame (nodes) wi
 Modesto Escobar, Department of Sociology and Communication, University of Salamanca. See \url{https://sociocav.usal.es/blog/modesto-escobar/}
 }
 \examples{
+\dontrun{
 ## This example uses a sample tweets using 
 ## the hashtag "#Cuentalo":
 
@@ -43,7 +46,8 @@ calCentr(R)
 ## In order to show the in/outdegree measures, 
 ## netCoin option "showArrow" must be set to "TRUE":
 
-D<-netCoin(R, showArrow=TRUE)
+library(netCoin)
+D <- addNetCoin(R, showArrows=TRUE)
 calCentr(D)
-
+}
 }

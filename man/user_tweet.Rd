@@ -37,7 +37,7 @@ A .csv or .dat file with users data attributes.
 Jose L.A. Berrocal,  University of Salamanca. See \url{http://berrocal.usal.es/}
 }
 \examples{
-## Not run:
+\dontrun{
 
 ## Example extracting the tweets from 
 ## twitter account @github:
@@ -49,5 +49,5 @@ user_tweet("github")
 ## to our environment:
 
 # github <- load_tweets("github", type = "timeline")
-## End (Not run)
+}
 }

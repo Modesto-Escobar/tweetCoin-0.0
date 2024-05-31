@@ -13,7 +13,7 @@ nametoWikiURL(name, language = "en")
   \item{language}{The language of the Wikipedia page version. This should consist of an ISO language code (default = "en").}
 }
 \details{
-This function adds the Wikipedia URL to a entry or name, i.e., "Max Weber" converts into \url{"https://es.wikipedia.org/wiki/Max_Weber"}. It also manages different the languages of Wikipedia thru the abbreviated two-letter language parameter, i.e., "en" = "english".
+This function adds the Wikipedia URL to a entry or name, i.e., "Max Weber" converts into \url{https://es.wikipedia.org/wiki/Max_Weber}. It also manages different the languages of Wikipedia thru the abbreviated two-letter language parameter, i.e., "en" = "english".
 }
 \value{
 A character vector of names' URLs.

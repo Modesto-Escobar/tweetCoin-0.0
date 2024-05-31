@@ -22,25 +22,23 @@ A data frame of Twitter data.
 Jose L.A. Berrocal,  University of Salamanca. See \url{http://berrocal.usal.es/}.
 }
 \examples{
+\dontrun{
 
-## Not run:
-
-# credentials()
+credentials()
 
 ## When using "user_tweet" function:
-# user_tweet("github", maxtweets=100, format="binary")
-# github <- load_tweets("github", type = "user", format="binary")
+user_tweet("github", maxtweets=100, format="binary")
+github <- load_tweets("github", type = "user", format="binary")
 
 ## When using "search_tweets":
-# search_tweet("data science", maxtweets = 300, 
+search_tweet("data science", maxtweets = 300, 
               type = "recent", format= "delimited")
-# datascience <- load_tweets(name= "data science", 
+datascience <- load_tweets(name= "data science", 
              type = "search", format= "delimited")
 
 ## When using "stream_tweet":
-# stream_tweet(search = "", timeout = 30,
+stream_tweet(search = "", timeout = 30,
                output_file_name = "sample", format= "delimited")
-# sample <- load_tweets("sample", "stream", "delimited")                
-                        
-## End(Not run)                      
+sample <- load_tweets("sample", "stream", "delimited")                                       
+}                    
 }

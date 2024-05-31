@@ -25,7 +25,7 @@ A data frame of Twitter data.
 Jose L.A. Berrocal,  University of Salamanca. See \url{http://berrocal.usal.es/}.
 }
 \examples{
-## Not run: 
+\dontrun{
 
 ## In this example we are going to join two datasets
 ## containing user's data: 
@@ -42,5 +42,5 @@ write.table(users, file = "users.txt")
 ## the type and format of the data:
 A<-join_tweets_file(file = "users.txt", type ="user", format = "binary")
 
-## End(Not run)
+}
 }

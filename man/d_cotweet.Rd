@@ -5,14 +5,11 @@
 This function produces a dynamic and interactive netCoin network from a data frame or matrix of tweets (original messages) coincidendes, conecting mentions and hashtags.
 }
 \usage{
-d_cotweet(Tweets, author="author", text="text", 
-          date="date", 
-          fields=c("followers", "following", "statuses", "location"),
-          searchers="@#", beginDate = NULL,
-          endDate= NULL, interval= 3600, 
-          tzone = "Europe/Paris", limits = NULL, nFrames = Inf,
-          seed = 1, n = min(5000,nrow(Tweets)), 
-          minlabel=5, ...)
+d_cotweet(Tweets, author = "author", text = "text", date = "date",
+          fields = c("followers", "following", "statuses", "location"),
+          searchers = "@#", beginDate = NULL, endDate = NULL, interval = 3600,
+          tzone = "Europe/Paris", tCutpoints = NULL, nFrames = Inf, seed=1,
+          n = min(5000,nrow(Tweets)), minlabel = 5, ...)
 }
 \arguments{
   \item{Tweets}{A data frame with at least one vector of names.}
@@ -25,7 +22,7 @@ d_cotweet(Tweets, author="author", text="text",
   \item{endDate}{Date of last available message.}
   \item{interval}{The end-points of the interval (default = 3600).}
   \item{tzone}{Time zone (e.g., "Europe/Paris").}
-  \item{limits}{Date vector with the cutpoints for dynamic graphs.}  
+  \item{tCutpoints}{Date vector with the cutpoints for dynamic graphs.}
   \item{nFrames}{The number of frames to render (default = Inf).}
   \item{seed}{A single value, interpreted as an integer, or NULL.}
   \item{n}{Sample the network if the number of nodes is greater than 5000 or n.}
@@ -39,9 +36,9 @@ Any \code{\link[netCoin]{netCoin}} and/or \code{\link[netCoin]{allNet}} argument
 }
 
 \value{
-This function creates a list containing three objects: "authors" (a data.frame containing names, links, Tweets and Mentions), "messages" (a data.frame containing dates, authors and texts) and "nets", (a set of \code{\link[netCoin]{netCoin}} objects). 
+This function creates a list containing three objects: "authors" (a data.frame containing names, links, Tweets and Mentions), "messages" (a data.frame containing dates, authors and texts) and "nets", (a \code{\link[netCoin]{multigraphCreate}} object).
 
-This set of netCoin objects can be ploted with netCoin's \code{\link[rD3plot]{multigraphCreate}} function, creating a folder in the computer with an HTML document named index.html which contains the produced graph(s). This file can be directly opened with your browser and sent to a web server to work properly.
+This object can be plotted with the plot() function, creating a folder in the computer with an HTML document named index.html which contains the produced graph(s). This file can be directly opened with your browser and sent to a web server to work properly.
 }
 \author{
 Modesto Escobar, Department of Sociology and Communication, University of Salamanca. See \url{https://sociocav.usal.es/blog/modesto-escobar/}
