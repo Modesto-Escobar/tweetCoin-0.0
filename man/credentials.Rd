@@ -26,9 +26,11 @@ Newly created environment containing the tokens.
 Jose L.A. Berrocal,  University of Salamanca. See \url{http://berrocal.usal.es/}
 }
 \examples{
+\dontrun{
 ## Once you have created a .txt containing the info 
 ## explained in details, name it "credentials.txt"
 ## and import it like this:
 
-## credentials()
+credentials()
+}
 }

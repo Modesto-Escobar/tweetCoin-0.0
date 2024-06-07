@@ -319,48 +319,6 @@ retweet <- function(data, sender="author", text="text", language="en", nodes=NUL
   return(net)
 }
 
-
-
-calCentr <-function(graph, measures=c("degree","wdegree","closeness","betweenness","eigen"), order="") {
-  if (any(measures=="all",  measures=="ALL")) measures <- c("degree", "wdegree", "closeness","betweenness","eigen")
-  if (inherits(graph,"netCoin")) graph <- toIgraph(graph)
-  m <- tolower(substring(measures,1,1))
-  if(is.null(attr(igraph::V(graph),"name"))) igraph::V(graph)$name <- igraph::V(graph)
-  G <- data.frame(nodes=igraph::V(graph)$name)
-  H <- data.frame(nodes="Total")
-  if("d" %in% m) {
-    R    <- centr_degree(graph)
-    G$degree  <- R$res
-    if("w" %in% m) G$wdegree <- strength(graph, weights=E(graph)$N)
-    if(is_directed(graph)) {
-      Rin  <- centr_degree(graph, "in")
-      Rout <- centr_degree(graph, "out")
-      G$indegree   <- Rin$res
-      if("w" %in% m) G$windegree  <- strength(graph, mode="in", weights=E(graph)$N)      
-      G$outdegree  <- Rout$res
-      if("w" %in% m) G$woutdegree <- strength(graph, mode="out", weights=E(graph)$N)
-    }
-    H$degree <- R$centralization
-  }
-  if("c" %in% m) {
-    R <- suppressWarnings(centr_clo(graph))
-    G$closeness <- R$res
-    H$closeness <- R$centralization
-  }
-  if("b" %in% m) {
-    R <- centr_betw(graph)
-    G$betweenness <- R$res
-    H$betweenness <- R$centralization
-  }
-  if("e" %in% m) {
-    R <- centr_eigen(graph)
-    G$eigen <- R$vector
-    H$eigen <- R$centralizacion
-  }
-  if (order %in% measures) G <- G[order(-G[[order]]),, drop=FALSE]
-  list(nodes=G,graph=H)
-}
-
 type <- function(Profiles, followers="followers", following="following", 
                  retweets="Retweets", tweets="Tweets", retweeted="Retweeted", X="X", Y="Y") {
   Profiles[["sent"]] <- Profiles[[tweets]]+Profiles[[retweets]]

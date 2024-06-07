@@ -22,8 +22,7 @@ Modesto Escobar, Department of Sociology and Communication, University of Salama
 }
 \examples{
 
-webfile<- "https://www.le.ac.uk/oerresources/bdra/html/resources/example.txt"
-
-readfile(file = webfile)
+testfile <- system.file("templates/Text.txt", package="tweetCoin")
+readfile(file = testfile)
 
 }
