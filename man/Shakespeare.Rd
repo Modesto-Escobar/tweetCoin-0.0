@@ -18,7 +18,6 @@ Data frame with a colection of tweets from hashtag "Shakespeare".
     \item{\code{following}}{author's followers}
     \item{\code{statuses}}{author's status}
     \item{\code{location}}{tweet location}
-    \item{\code{status_id}}{status id}
     }
 }
 \references{

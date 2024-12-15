@@ -203,11 +203,12 @@ linkTwitter <- function(entity) {
   return(link)
 }
 
-hashtag_extract<- function(texto,characters="#@", excludeRT=TRUE, oldText=NULL, newText=NULL){
+hashtag_extract<- function(texto, characters="#@", excludeRT=TRUE, oldText=NULL, newText=NULL){
+  texto <- gsub("[^\x20-\x7E]", "", texto)
   charsearch <- paste0("[",characters,"][A-Za-z_0-9]{2,}")
   texto <- gsub("([.,;:])(\\S)","\\1 \\2", gsub("<.*>","",enc2native(texto)))
   texto <- tolower(iconv(texto, to="ASCII//TRANSLIT"))
-  if (excludeRT) texto <- sub("^RT .*?: (\\?)*[ ]*","",texto)
+  if (excludeRT) texto <- sub("^rt .*?:","",texto)
   hh <-function(texto,charsearch){
     paste(unlist(regmatches(texto, gregexpr(charsearch, texto, perl=TRUE))),collapse="|")
   }
@@ -285,15 +286,19 @@ cotweet <- function(data, text="text", searchers="@#", original= TRUE, excludeRT
   do.call(addNetCoin, arguments)
 }
 
-cotext <- function(data, text="text", sep=" ", min=1, ...) {
+cotext <- function(data, text="text", sep=" ", minF=1, ...) {
   arguments <- list(...)
   if(!exists("minimum", arguments)) minimum=1 else minimum <- arguments$minimum; arguments$minimum <- NULL
   if(!exists("maxL", arguments)) maxL <-  Inf else maxL <- arguments$maxL; arguments$maxL <- NULL
   if(!exists("minL", arguments)) minL <- -Inf else minL <- arguments$minL; arguments$minL <- NULL
   if(!exists("support", arguments)) support <- -Inf else support <- arguments$support; arguments$support <- NULL
   if(!exists("procedures", arguments)) procedures="frequencies" else procedures <- arguments$procedures; arguments$procedures <- NULL
-  if(!exists("criteria", arguments)) criteria="frequencies" else criteria <- arguments$criteria; arguments$criteria <- NULL
-  incidences <- dichotomize(data, text, sep=sep, add=F, min=min, nas="None")
+  if(!exists("criteria", arguments)) {
+    criteria="frequencies" 
+    if (!exists("minL") || minL<1) minL <- 1
+    }
+    else criteria <- arguments$criteria; arguments$criteria <- NULL
+  incidences <- dichotomize(data, text, sep=sep, add=F, min=minF, nas="None")
   graph <- allNet(incidences, procedures=procedures, criteria=criteria, minimum=minimum, minL=minL, maxL=maxL, support=support)
   if (!exists("community", arguments)) arguments$community <- "Walktrap"
   if (!exists("color", arguments)) arguments$color  <- "community"
@@ -531,7 +536,7 @@ d_mention <-function(Tweets, author="author", text="text", date="date", imagedir
                        '% |', rep('=', count/nFrames*100), 
                        ifelse(count ==nFrames, '|\n',  '>'), sep = '')
     
-    arguments$main <-  paste0(title, " ", as.character(serie[i], format="%d/%m/%Y, %H:%M")) 
+    arguments$main <-  paste0(title, " ", format(serie[i], format="%d/%m/%Y, %H:%M")) 
     arguments$zoom  <- max(.50,arguments$zoom*(.985)^(count-1)) # .10 y .965
     rets  <- Messages[Messages$date <= serie[i],]
     
@@ -695,7 +700,7 @@ d_cotweet <-function(Tweets, author="author", text="text", date="date",
                        '% |', rep('=', count/nFrames*100), 
                        ifelse(count ==nFrames, '|\n',  '>'), sep = '')
     
-    arguments$main <-  paste0(title, " ", as.character(serie[i], format="%d/%m/%Y, %H:%M")) 
+    arguments$main <-  paste0(title, " ", format(serie[i], format="%d/%m/%Y, %H:%M")) 
     arguments$zoom  <- max(.50,arguments$zoom*(.985)^(count-1)) # .10 y .965
     rets  <- Messages[Messages$date <= serie[i],]
     
@@ -823,7 +828,7 @@ d_cotext <-function(data, text="text", sep=" ", min=1, date="date",
                        '% |', rep('=', count/nFrames*100), 
                        ifelse(count ==nFrames, '|\n',  '>'), sep = '')
     
-    arguments$main <-  paste0(title, " ", as.character(serie[i], format="%d/%m/%Y, %H:%M")) 
+    arguments$main <-  paste0(title, " ", format(serie[i], format="%d/%m/%Y, %H:%M")) 
     arguments$zoom  <- max(.50,arguments$zoom*(.985)^(count-1)) # .10 y .965
     incs  <- incidences[data[[date]] <= serie[i],]
     
@@ -837,7 +842,7 @@ d_cotext <-function(data, text="text", sep=" ", min=1, date="date",
     }
     else {
       ncoin[[i]] <- graph
-      ncoin[[i]]$options$main <- paste0(title, " ", as.character(serie[i], format="%d/%m/%Y, %H:%M")) 
+      ncoin[[i]]$options$main <- paste0(title, " ", format(serie[i], format="%d/%m/%Y, %H:%M")) 
       ncoin[[i]]$nodes <- merge(ncoin[[i]]$nodes, tnodes)
       names(ncoin[[i]]$nodes) <- names(ncoin[[1]]$nodes)
     }
@@ -987,7 +992,7 @@ d_retweet <-function(Tweets, author="author", text="text", date="date",
                        '% |', rep('=', count/nFrames*100), 
                        ifelse(count ==nFrames, '|\n',  '>'), sep = '')
     
-    arguments$main <-  paste0(title, " ", as.character(serie[i], format="%d/%m/%Y, %H:%M")) 
+    arguments$main <-  paste0(title, " ", format(serie[i], format="%d/%m/%Y, %H:%M")) 
     arguments$zoom  <- max(.50,arguments$zoom*(.995)^(count-1)) # .10 y .965
     rets  <- PRetweets[PRetweets$Date <= serie[i],]
     
