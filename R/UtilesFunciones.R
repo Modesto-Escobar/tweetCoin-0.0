@@ -844,6 +844,7 @@ d_cotext <-function(data, text="text", sep=" ", min=1, date="date",
       ncoin[[i]] <- graph
       ncoin[[i]]$options$main <- paste0(title, " ", format(serie[i], format="%d/%m/%Y, %H:%M")) 
       ncoin[[i]]$nodes <- merge(ncoin[[i]]$nodes, tnodes)
+      rownames(ncoin[[i]]$nodes) <- ncoin[[i]]$nodes[[ncoin[[i]]$options$nodeName]]
       names(ncoin[[i]]$nodes) <- names(ncoin[[1]]$nodes)
     }
   }

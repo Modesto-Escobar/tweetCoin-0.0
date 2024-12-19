@@ -1,7 +1,7 @@
 Package: tweetCoin
 Type: Package
-Version: 0.1.1
-Date: 2024-06-07
+Version: 0.1.2
+Date: 2024-12-19
 Title: netCoin for Twitter
 Description: Create interactive analytic networks from Twitter messages.
 License: GPL-2 | GPL-3

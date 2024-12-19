@@ -5,13 +5,13 @@
 This function produces an interactive netCoin network from a data frame or matrix with text and dates, connecting their elements differentiated by a separator.
 }
 \usage{
-cotext(data, text = "text", sep = " ", min = 1, ...)
+cotext(data, text = "text", sep = " ", minF = 1, ...)
 }
 \arguments{
   \item{data}{A data frame with at least one vector of names.}
   \item{text}{Vector name from data containing the messages (tweets) or other relevant text.}
   \item{sep}{Separator between values/entries, defaults to space (" ").}
-  \item{min}{Minimum number of ocurrences of the text to be include in the graph, default = 1.}
+  \item{minF}{Minimum number of ocurrences of the text to be include in the graph, default = 1.}
   \item{...}{Any \code{\link[netCoin]{netCoin}} and/or \code{\link[netCoin]{allNet}} argument.}
 }
 \details{
@@ -32,7 +32,7 @@ Modesto Escobar, Department of Sociology and Communication, University of Salama
 
 data(Shakespeare)
 Shakespeare$elements <- hashtag_extract(Shakespeare$text)
-t <- cotext(data = Shakespeare, text = "elements", sep="|", min = 15)
+t <- cotext(data = Shakespeare, text = "elements", sep="|", minF = 15)
 
 ## You can include all type of arguments from netCoin 
 ## and/or allNet:
@@ -45,6 +45,6 @@ t2 <- addNetCoin(t, size = "degree",
 ## We extracted the hashtags first using hashtag_extract() function,
 ## but it can also be directly used like this:
 
-t3 <- cotext(Shakespeare, text = "text", sep = "#", min = 15)
+t3 <- cotext(Shakespeare, text = "text", sep = "#", minF = 15)
 plot(t3)
 }
